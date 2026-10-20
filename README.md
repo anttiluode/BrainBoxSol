@@ -159,3 +159,7 @@ The next worthwhile experiment is *not* a larger network. It is a frozen prospec
 - [Lisman and Jensen (2013), The Theta-Gamma Neural Code](https://pmc.ncbi.nlm.nih.gov/articles/PMC3648857/): phase/subcycle organization of multiple items, motivating but not proving PAC as a robust spatial address.
 
 BrainBoxSol's limited implementation tests an established projection idea against a concrete local conductance response Jacobian. It does not establish novelty of the projection, nor a biological PAC mechanism.
+
+### Reward-only conductance writing
+
+The next bounded experiment replaces the explicit teacher gradient with one-bit action rewards. See [method, controls, and limitations](docs/reward_medium.md) and the [locked protocol](protocols/reward_medium.json). This tests learning in a small physical medium; it does not establish a brain.
