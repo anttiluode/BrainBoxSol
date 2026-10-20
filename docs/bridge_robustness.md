@@ -55,7 +55,7 @@ The combined arm changes slightly less from its own trained output than repair a
 
 Each writer used 2352 forward and 2352 adjoint solves plus 48 update solves per device, identically across arms. Cost matching does not make this competitive with a direct digital target table.
 
-The numerical audit recomputed all **3840** paired arm evaluations, regenerated RNG inputs, verified source hashes and checked endpoint losses and deterministic training costs. All **63 repository tests** passed. Intermediate optimization trajectories were not independently rerun. Both the fresh receipt and all development versions remain available.
+The original numerical audit recomputed all **3840** paired arm evaluations, regenerated RNG inputs, verified source hashes and checked endpoint losses and deterministic training costs. All **63 repository tests** passed at the scientific source lock. That original audit did not retrain. The separate training reproduction below now covers the complete optimization trajectories. Both the fresh receipt and all development versions remain available.
 
 [Full receipt](../results/bridge_robustness/full.json) · [Self-contained visual report](../results/bridge_robustness/report.html) · [Implementation review](bridge_robustness_review.md).
 
@@ -63,8 +63,36 @@ Interpretation: this particular noise-aware writer did not transfer a useful rob
 
 ## Post-lock audit portability
 
-The original scientific source and full JSON remain unchanged. A PR runner regenerated one initial bridge as 0.0306364121715947 instead of the recorded 0.030636412171594705, a one-ULP difference (6.94e-18), so the original bit-exact bridge check rejected an otherwise matching receipt. The producing-run and another runner's strict audits passed.
+The original scientific source and full JSON remain unchanged. A PR runner regenerated one initial bridge as 0.0306364121715947 instead of the recorded 0.030636412171594705, a two-ULP difference (6.94e-18), so the original bit-exact bridge check rejected an otherwise matching receipt. The producing-run and another runner's strict audits passed. The earlier description called this one ULP; this corrects the wording without changing any result.
 
 `audit_bridge_receipt.py` is a separate post-lock audit utility. It allows at most eight ULPs of initial-bridge regeneration difference, reports every adjustment and its maximum size, normalizes only those entries in a deep audit copy, then calls all original source-provenance, physics, RNG, endpoint, cost and summary checks. It never changes the producing source or saved receipt. Larger material changes are rejected.
 
-Tests first reproduced the strict one-ULP failure, then verify that the portable audit reports it without mutating input and rejects a 1e-10 material change. This is numerical portability handling, not a change to training or scientific verdicts. The original full run had 63 tests; the final branch adds three portability tests, for 66.
+Tests first reproduced the strict one-ULP failure, then verify that the portable audit reports it without mutating input and rejects a 1e-10 material change. This is numerical portability handling, not a change to training or scientific verdicts. The original full run had 63 tests; the earlier portability branch added three tests, for 66. The training auditor initially adds seven, bringing the suite to 73.
+
+## Independent locked-training reproduction
+
+The [separate training audit](../results/bridge_robustness/training-audit.json) reruns the exact clean source commit `7cb745c7d0b197742616401a5d1838d13f19854e` in a fresh Python interpreter. It does not initialize from saved trained materials. Both writers start from each device's regenerated initial field, teacher and training bank, using the unchanged protocol and seeds 7001–7010. The original receipt's SHA-256 remains `ae4e7c1288e5b73a20cb0af40d15fa6e9473025aad6931c65e4c22a8916821e3`.
+
+All **20 writers**, **900 final conductances**, and **960 intermediate losses** reproduced within fixed numerical tolerances. Maximum absolute field difference was **2.9272e-11**; maximum loss-history difference **1.7348e-15**; maximum endpoint-loss difference **1.0634e-15**. Conductance tolerance is `atol=1e-11, rtol=1e-9`; losses use `atol=1e-15, rtol=1e-8`. These are numerical reproducibility thresholds, not scientific benefit thresholds. Source and protocol hashes, flags and seeds must match exactly; solve counts must match exactly.
+
+Transparent call counters around the locked writer observe **2352 reads, 4704 node-system linear solves and 48 update solves per writer/device**. The locked `read` executes one forward and one adjoint solve each time; the counter records their aggregate rather than inferring costs solely from the saved formula. Both ordinary and noisy writers use the same actual budget. All four recomputed primary mean target errors differ from the original by at most **1.902e-14**. Both failed benefit claims remain failed.
+
+The original and rerun receipts each also pass the portable endpoint audit. On this runner, 16 original bridge entries (counting both writer copies) differ from regenerated initials by at most two ULPs, or 1.388e-17. Only the audit copy is normalized; all original materials and results remain intact. Python/NumPy/BLAS environment, source hashes, tolerances, rerun fields, full loss histories and observed counts are recorded in the separate audit. This is independent execution of the locked implementation, not a separately implemented optimizer or new held-out experiment.
+
+Reproduce from a full Git clone, with a new output path each time:
+
+```bash
+git worktree add --detach ../brainbox-locked 7cb745c7d0b197742616401a5d1838d13f19854e
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python reproduce_bridge_training.py \
+  --source ../brainbox-locked \
+  --receipt results/bridge_robustness/full.json \
+  --out /tmp/bridge-training-audit-new.json
+```
+
+## Follow-up decision
+
+No additional scientific gate is introduced in this audit. NCM-inspired corruption training has now failed its two locked benefit tests; changing noise settings on these ten seeds would be development, not fresh confirmation. A larger training bank is not justified merely by this negative result.
+
+HybridAgent-inspired quantization is a useful question only after specifying the communication boundary. Here raw charge already gives 100% binary-task accuracy and the matched-waveform peak gives 96.6406%. Thus the existing task does not establish that a rich waveform is necessary. One nearest word is also not one bit: an index into a vocabulary of size V needs approximately log2(V) bits. A receiver-aligned projection followed by a trained one-bit threshold could reproduce an existing binary decision by construction; that alone would not discover a stronger memory mechanism.
+
+A future quantization gate would need a fresh unresolved task, training-only codebook/calibration, transmitted index bit budgets, and explicit accounting for amplitude/charge, scale factors, timing and any other continuous side channel. No new paper performance claims are relied upon here. For now the useful result is the retained falsification and complete training reproduction, rather than another tuned model.

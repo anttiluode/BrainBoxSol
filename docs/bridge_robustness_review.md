@@ -9,3 +9,11 @@ Both were fixed before full seeds. The primary is now independent per-edge drift
 Two minor issues were also fixed: deterministic update/bridge-write counts are now audited, and finite-difference tests include nonunit writable conductance factors. Intermediate training losses are stored but explicitly not independently recomputed without retraining.
 
 Regression evidence: all three added negative tests failed on the original implementation (forged update count, forged source commit, numeric-zero relative effect). The repaired implementation passed all **63** repository tests in [GitHub Actions run 39471990982](https://github.com/anttiluode/BrainBoxSol/actions/runs/39471990982). The reviewer then reported no remaining Critical or Important findings. No tests or held-out settings were changed to obtain a favorable scientific result.
+
+## Independent training-audit review
+
+A separate read-only reviewer inspected `reproduce_bridge_training.py`, its regression tests, the portable endpoint auditor, method updates and CI. The reviewer also independently ran the complete training-audit CLI against the clean source lock: **20 writers, 900 conductances and 960 intermediate losses reproduced**, with the original receipt bytes unchanged. Maximum absolute field difference was 2.927125208884718e-11; maximum loss-history difference 1.7347776860854314e-15. No Critical or Important issue was found.
+
+The reviewer confirmed that transparent instrumentation measures actual read/node/update solves while preserving numerical calls, and that combined forward/adjoint counting is disclosed. This independently executes the same locked implementation; it is not an independent optimizer implementation. No new held-out scientific claim is introduced.
+
+Two minor findings: historical wording calling 66 tests the final branch count needed correction; the runtime environment collector uses a NumPy-version-specific configuration attribute and should tolerate its absence on supported NumPy 1.x versions. The historical-count wording is corrected. Compatibility handling is a separate follow-up below; original audit evidence remains intact.

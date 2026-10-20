@@ -1,0 +1,58 @@
+name: Locked bridge training reproduction
+
+on:
+  push:
+    branches: [main, sol/noise-aware-bridge, sol/locked-training-audit]
+    paths:
+      - reproduce_bridge_training.py
+      - test_reproduce_bridge_training.py
+      - audit_bridge_receipt.py
+      - bridge_robustness.py
+      - phase_bridge_gate.py
+      - brainboxsol.py
+      - protocols/bridge_robustness.json
+      - results/bridge_robustness/full.json
+      - .github/workflows/locked-training-audit.yml
+  pull_request:
+    paths:
+      - reproduce_bridge_training.py
+      - test_reproduce_bridge_training.py
+      - audit_bridge_receipt.py
+      - bridge_robustness.py
+      - phase_bridge_gate.py
+      - brainboxsol.py
+      - protocols/bridge_robustness.json
+      - results/bridge_robustness/full.json
+      - .github/workflows/locked-training-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce-training:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - run: python -m unittest discover -v
+      - run: git worktree add --detach ../locked-bridge-source 7cb745c7d0b197742616401a5d1838d13f19854e
+      - run: >-
+          python reproduce_bridge_training.py
+          --source ../locked-bridge-source
+          --receipt results/bridge_robustness/full.json
+          --out results/bridge_robustness/ci-training-audit.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: locked-bridge-training-audit
+          path: results/bridge_robustness/ci-training-audit.json
+          retention-days: 90
