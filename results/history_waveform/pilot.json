@@ -1,0 +1,15 @@
+{
+  "seed": 401,
+  "train_pairs": 16,
+  "test_pairs": 32,
+  "history_pulses": 3,
+  "write_rate": 0.005,
+  "noise": 0.02,
+  "std": 0.15,
+  "accuracies": {
+    "joint": 1.0,
+    "erased": 0.5
+  },
+  "settings_changed_after_pilot": false,
+  "note": "Initial exploratory probe; full selected-setting controls follow in development.json."
+}

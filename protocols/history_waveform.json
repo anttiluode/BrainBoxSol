@@ -1,0 +1,55 @@
+{
+  "version": "history-waveform-v1",
+  "locked": true,
+  "config": {
+    "size": 9,
+    "dt": 0.1,
+    "leak": 0.02,
+    "mean": 0.08,
+    "lower": 0.005,
+    "upper": 0.4,
+    "steps": 160,
+    "pulse": 24,
+    "read_start": 113,
+    "width": 0.7,
+    "train_jitter": 0.25,
+    "eval_jitter": 0.35,
+    "train_noise": 0.05,
+    "eval_noise": 0.1,
+    "amplitude_min": 0.8,
+    "amplitude_max": 1.2,
+    "ratio_epsilon": 1e-09,
+    "energy_floor": 1e-08,
+    "target_magnitude": 0.8
+  },
+  "history_pulses": 3,
+  "write_rate": 0.005,
+  "noise": 0.02,
+  "std": 0.15,
+  "train_pairs": 32,
+  "test_pairs": 64,
+  "development_seeds": [
+    401,
+    409,
+    419
+  ],
+  "heldout_seeds": [
+    501,
+    502,
+    503,
+    504,
+    505,
+    506,
+    507,
+    508,
+    509,
+    510
+  ],
+  "thresholds": {
+    "accuracy": 0.8,
+    "gain": 0.2,
+    "control_ceiling": 0.6,
+    "invariant_tolerance": 1e-10,
+    "refinement": 0.02
+  }
+}

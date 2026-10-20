@@ -165,3 +165,7 @@ BrainBoxSol's limited implementation tests an established projection idea agains
 The next bounded experiment replaces the explicit teacher gradient with one-bit action rewards. See [method, controls, and limitations](docs/reward_medium.md) and the [locked protocol](protocols/reward_medium.json). This tests learning in a small physical medium; it does not establish a brain.
 
 Locked reward result: **75% held-out accuracy** across ten fresh seeds, versus 50% frozen/erased/random updates, 48.9% shuffled reward, and 96.25% teacher. The 80% gate **failed**; erasure removed the learned gain. See the [complete report](docs/reward_medium.md), [receipt](results/reward_medium/full.json), [result chart](results/reward_medium/results.png), and [recorded replay](results/reward_medium/replay.html).
+
+### History across a temporal boundary
+
+The next controlled experiment sends Box 1's history-dependent relaxation trace into a frozen Box 2. The primary pulses match charge, squared-current integral, onset, duration, and count. See [method and limits](docs/history_waveform.md) and [protocol](protocols/history_waveform.json). Raw-charge and scalar-peak diagnostics prevent a claim that all scalar readouts are blind.
