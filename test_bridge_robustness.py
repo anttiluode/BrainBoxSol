@@ -86,6 +86,13 @@ class BridgeRobustnessTests(unittest.TestCase):
             self.assertFalse(set(used) & set(values))
             used.extend(values)
 
+
+    def test_relative_reduction_is_unresolved_at_numerical_floor(self):
+        receipt = br.run_experiment("smoke")
+        claim = receipt["summary"]["claims"]["combined_vs_repair"]
+        self.assertIsNone(claim["relative_error_reduction"])
+        self.assertFalse(claim["criteria"]["relative_error_reduction"])
+
     def test_full_run_rejects_missing_lock_before_evaluation(self):
         with self.assertRaisesRegex(ValueError, "lock"):
             br.run_experiment("full")
