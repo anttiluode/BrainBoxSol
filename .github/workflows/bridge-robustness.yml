@@ -33,6 +33,16 @@ jobs:
       - run: python -m pip install -r requirements.txt
       - name: Full repository tests
         run: python -m unittest discover -v
+      - name: Audit committed fresh receipt
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import bridge_robustness as b
+          path = Path("results/bridge_robustness/full.json")
+          if path.exists():
+              print(json.dumps(b.audit_receipt(json.loads(path.read_text())), indent=2))
+          PY
       - name: Development or locked evaluation
         run: |
           if [ "$GITHUB_EVENT_NAME" = push ] && git diff --name-only HEAD^ HEAD | rg -Fxq protocols/bridge_robustness_run.json; then
