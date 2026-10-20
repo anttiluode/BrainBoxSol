@@ -6,4 +6,4 @@ The reviewer identified a minor output-path hazard: full and smoke modes default
 
 Development passed on all three devices without changing the initial learning/matching settings. No claim is made that every scalar is blind: raw charge and the conditioned peak already discriminate histories. Offline whole-window conditioning, designed history locations, supervised calibration, and passive linear receiving dynamics are explicit limitations.
 
-Fresh result and receipt audit pending.
+Fresh locked evaluation passed: 1,279/1,280 primary decisions correct, fixed/erased 50%, shuffled 50.7031%. A separate receipt audit exactly recomputed all primary voltages/decisions, verified training calibration/control decisions/shuffle permutations, regenerated representative histories/probe traces, and matched source/protocol hashes to the lock commit. All 49 tests pass. The figures were visually inspected. The offline conditioner and scalar diagnostics remain explicit limitations.

@@ -169,3 +169,5 @@ Locked reward result: **75% held-out accuracy** across ten fresh seeds, versus 5
 ### History across a temporal boundary
 
 The next controlled experiment sends Box 1's history-dependent relaxation trace into a frozen Box 2. The primary pulses match charge, squared-current integral, onset, duration, and count. See [method and limits](docs/history_waveform.md) and [protocol](protocols/history_waveform.json). Raw-charge and scalar-peak diagnostics prevent a claim that all scalar readouts are blind.
+
+Locked history-transmission result: **99.92% (1,279/1,280)** on ten fresh devices, fixed/erased **50%**, shuffled **50.70%**. The gate passed. [Visual report](results/history_waveform/report.html) · [Mechanism](results/history_waveform/mechanism.png). Raw charge alone also scored 100%; this establishes transmission through an engineered temporal port, not universal scalar blindness.

@@ -1,0 +1,12 @@
+{
+  "primary_decisions_recomputed": 1280,
+  "maximum_receiver_voltage_difference": 0,
+  "max_charge_error": 3.552713678800501e-15,
+  "max_squared_current_integral_error": 7.105427357601002e-15,
+  "protocol_and_source_hashes_match_lock": true,
+  "models_refitted_from_stored_training_observations": true,
+  "representative_history_materials_and_probe_traces_regenerated": true,
+  "control_predictions_and_shuffle_permutations_verified": true,
+  "scalar_peak_diagnostic_verified": true,
+  "solve_counts_verified": true
+}

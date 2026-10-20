@@ -56,4 +56,36 @@ Full mode verifies the committed protocol and implementation at the exact curren
 
 ## Fresh result
 
-Pending locked evaluation. Any pass establishes a limited engineered history-transmission mechanism. It would not establish spikes, biological waveform coding, a teacher-free learning gradient, holography, or a brain.
+**The locked gate passed.** Jointly matched temporal currents gave **1,279/1,280 correct (99.9219%)** across ten fresh simulated devices. Fixed pulses and erased material gave 50%, and shuffled waveform assignment gave 50.7031%. No learning, matching, port, or verdict settings changed after the lock commit `0d45a0c35d826c798ae9bd7872e49b664b3e5d9f`.
+
+| Arm | Mean accuracy | Device range |
+|---|---:|---:|
+| joint | 99.9219% | 99.2188%–100.0000% |
+| raw | 100.0000% | 100.0000%–100.0000% |
+| energy_only | 99.9219% | 99.2188%–100.0000% |
+| fixed | 50.0000% | 50.0000%–50.0000% |
+| shuffled | 50.7031% | 45.3125%–57.0312% |
+| erased | 50.0000% | 50.0000%–50.0000% |
+| charge_only | 100.0000% | 100.0000%–100.0000% |
+| peak_scalar | 96.6406% | 94.5312%–98.4375% |
+
+| Device seed | Joint waveform | Shuffled waveform | Fixed / erased |
+|---|---:|---:|---:|
+| 501 | 100.0000% | 45.3125% | 50% / 50% |
+| 502 | 100.0000% | 51.5625% | 50% / 50% |
+| 503 | 100.0000% | 54.6875% | 50% / 50% |
+| 504 | 99.2188% | 57.0312% | 50% / 50% |
+| 505 | 100.0000% | 46.8750% | 50% / 50% |
+| 506 | 100.0000% | 46.8750% | 50% / 50% |
+| 507 | 100.0000% | 53.1250% | 50% / 50% |
+| 508 | 100.0000% | 48.4375% | 50% / 50% |
+| 509 | 100.0000% | 51.5625% | 50% / 50% |
+| 510 | 100.0000% | 51.5625% | 50% / 50% |
+
+The primary errors came from seed 504 (127/128 correct); the other nine devices scored 128/128. The maximum charge error was 3.55e-15, the maximum squared-current-integral error was 7.11e-15, and the largest step-halving receiver-voltage difference was 0.00180905. The audit exactly recomputed all 1,280 primary receiver voltages and decisions, refit all stored receiver thresholds from training observations, verified control predictions and shuffle permutations, regenerated example written materials/probe traces, and matched protocol/source hashes to the lock commit.
+
+This establishes a limited causal chain: activity changes persistent material; after fast activity is erased, identical probes produce distinguishable temporal responses; those responses cause distinguishable states in another frozen medium. Erasing the material or breaking history/waveform assignment removes reliable decoding.
+
+It does **not** establish a need for the full waveform: raw total charge alone scored 100%, and a scalar peak of the jointly matched waveform scored 96.6406%. Our charge/energy matching rules exclude two particular scalar explanations, not every possible scalar representation. The second RC box itself is a temporal linear filter whose one scalar observation is read with supervised calibration. This experiment does not repair or rerun the earlier reward-learning failure.
+
+[Mechanism figure](../results/history_waveform/mechanism.png) and [all-device chart](../results/history_waveform/results.png) show actual recorded quantities. [Standalone visual report](../results/history_waveform/report.html). The complete receipt is `results/history_waveform/full.json`; the audit is `audit.json`. All 49 unit tests pass.
