@@ -17,3 +17,9 @@ jobs:
       - run: OPENBLAS_NUM_THREADS=1 python -m unittest -v test_brainboxsol
       - run: OPENBLAS_NUM_THREADS=1 python brainboxsol.py --out results/gate0.json
       - run: OPENBLAS_NUM_THREADS=1 python sweep.py --out results/sweep.json
+      - run: OPENBLAS_NUM_THREADS=1 python -m unittest -v test_phase_bridge_gate
+      - run: OPENBLAS_NUM_THREADS=1 python phase_bridge_gate.py --out results/phase_bridge.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: brainboxsol-receipts
+          path: results/*.json

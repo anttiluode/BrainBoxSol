@@ -106,7 +106,15 @@ The code uses an SVD row-space projection. This suppresses new updates in direct
 
 The protected arm has **not** passed the bridge-drift/homeostasis gate: G0's drift failure remains, and projection cannot magically make a physically changed address scaffold invariant.
 
-## G2 — the next genuine discriminator (not yet run)
+## G2 — Phase/address synthesis under actual bridge drift (2026-10-20)
+
+New **post-hoc** combination of BrainBoxClaude's G2/G3 ideas with this repository's protected-material writer: [full gate report](docs/phase_bridge_synthesis.md).
+
+**Key finding:** Current-phase timing improves access in an unprotected medium, but does **not itself protect** the memory against bridge drift. Conserving each block-to-block interface's total conductance protects both old response functions and phase addresses in this selected graph. Fixed externally assigned time slots are a strong control that can outperform PAC-like release after drift. Not a new learning method; no RNN comparison yet.
+
+Run: `python phase_bridge_gate.py` and `python -m unittest -v test_phase_bridge_gate`.
+
+## G3 — the next genuine discriminator (not yet run)
 
 Take the protected writer into a task with more potential experiences than explicit readout slots. Freeze hyperparameters, constrain the old-query replay budget, add context-gated readouts and physically perturbed bridges, and compare with capacity-/compute-matched conventional gradient projection, recurrent memory and direct indexed memory. A geometry-mediated benefit must survive those controls.
 
