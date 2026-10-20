@@ -6,6 +6,8 @@ A small, inspectable experiment linking the 2024 SuperWeights question to the Oc
 
 **Status: exploratory CPU toy with one fixed teacher and one write order; not a demonstrated new AI architecture, a biological lipizone model, or a learned PAC code.** The results below are from a local run of the supplied deterministic code and can be regenerated. The gates were not preregistered before running.
 
+**Proposed next subsystem:** [Experience changes the medium — adaptive material design](docs/superpowers/specs/2026-10-20-adaptive-medium-design.md). A separate fast signal and persistent conductance grid would learn two cue-to-output associations, with reset, erasure, shuffle and ordinary-classifier controls. This is a specification awaiting review; no implementation or result is claimed.
+
 ## Run
 
 Requires Python 3.10+ and NumPy.
