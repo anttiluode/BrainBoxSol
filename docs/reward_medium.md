@@ -72,4 +72,3 @@ All fields retain 272 conductances (2,176 float64 payload bytes), with a fixed t
 The aggregate score must be read alongside the mapping breakdown: the original geometry already solves the aligned mapping, so improvement on the reversed mapping is the informative learning test. Erasure restores the initial field, demonstrating where any retained improvement resides. This is a limited association experiment using global parameter search. It establishes neither general intelligence nor a biological learning mechanism.
 
 The code review found no remaining critical or important issues. All 40 unit tests and the GitHub CPU workflow passed before the fresh run. An independent recomputation of receipt energies, scores, protocol hash, input digests, and training solve counts is recorded in `results/reward_medium/audit.json`.
-
