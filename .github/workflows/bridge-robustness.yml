@@ -4,6 +4,7 @@ on:
     branches: [sol/noise-aware-bridge]
     paths:
       - bridge_robustness.py
+      - audit_bridge_receipt.py
       - test_bridge_robustness.py
       - protocols/bridge_robustness.json
       - protocols/bridge_robustness_run.json
@@ -38,10 +39,10 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          import bridge_robustness as b
+          import audit_bridge_receipt as audit
           path = Path("results/bridge_robustness/full.json")
           if path.exists():
-              print(json.dumps(b.audit_receipt(json.loads(path.read_text())), indent=2))
+              print(json.dumps(audit.audit_portable(json.loads(path.read_text())), indent=2))
           PY
       - name: Development or locked evaluation
         run: |

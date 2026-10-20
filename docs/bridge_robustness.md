@@ -47,7 +47,7 @@ Primary independent bridge drift, log-noise strength 0.6; mean absolute target-r
 | Interface repair | 0.00110702 | 0.00110702 |
 | Noise-aware + repair | 0.00369595 | 0.00107218 |
 
-Noise-aware writing is **4.31% worse** than ordinary writing and improves only 1/10 device means. Combined writing/repair is **3.34× worse** than repair alone and improves 0/10. Repair alone reduces ordinary error by **95.77%**. A frozen untrained material scores 0.02713311.
+Noise-aware writing is **4.31% worse** than ordinary writing and improves only 1/10 device means. Combined writing/repair is **3.34× the target error** of repair alone and improves 0/10. Repair alone reduces ordinary error by **95.77%**. A frozen untrained material scores 0.02713311.
 
 Ordinary clean error is 3.814e-14, noise-aware clean error 0.00382452. The 0.00382452 clean penalty exceeds the allowed 0.002. Device-paired bootstrap 95% intervals for error reduction are negative: noise-aware vs ordinary [-0.00169868, -0.00058963]; combined vs repair [-0.00355126, -0.00164765]. These intervals are descriptive and resample devices, not ports or drift trials.
 
@@ -60,3 +60,11 @@ The numerical audit recomputed all **3840** paired arm evaluations, regenerated 
 [Full receipt](../results/bridge_robustness/full.json) · [Self-contained visual report](../results/bridge_robustness/report.html) · [Implementation review](bridge_robustness_review.md).
 
 Interpretation: this particular noise-aware writer did not transfer a useful robustness benefit to fresh physical drift, despite the reasonable analogy to NCM conditioning corruption. It does not rule out all noise-aware methods or larger training banks. Do not retune these full seeds and re-label the result held out.
+
+## Post-lock audit portability
+
+The original scientific source and full JSON remain unchanged. A PR runner regenerated one initial bridge as 0.0306364121715947 instead of the recorded 0.030636412171594705, a one-ULP difference (6.94e-18), so the original bit-exact bridge check rejected an otherwise matching receipt. The producing-run and another runner's strict audits passed.
+
+`audit_bridge_receipt.py` is a separate post-lock audit utility. It allows at most eight ULPs of initial-bridge regeneration difference, reports every adjustment and its maximum size, normalizes only those entries in a deep audit copy, then calls all original source-provenance, physics, RNG, endpoint, cost and summary checks. It never changes the producing source or saved receipt. Larger material changes are rejected.
+
+Tests first reproduced the strict one-ULP failure, then verify that the portable audit reports it without mutating input and rejects a 1e-10 material change. This is numerical portability handling, not a change to training or scientific verdicts. The original full run had 63 tests; the final branch adds three portability tests, for 66.
