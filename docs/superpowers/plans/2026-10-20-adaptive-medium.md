@@ -1,6 +1,6 @@
 # Adaptive Material Memory Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Execution method awaits user selection; do not start implementation merely because this plan exists.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking. Native execution was approved by the user at 12:02 Europe/Helsinki; completed steps are checked below.
 
 **Goal:** Demonstrate whether supervised changes to a small conductance grid cause better later cue-to-motor responses after fast activity is reset.
 
@@ -63,7 +63,7 @@ no framework, package migration, application server or new dependency is needed.
 - `operator(grid: Grid, g: ndarray[E], *, leak: float) -> ndarray[N,N]` implements `B diag(g) B.T + leak*I`.
 - `rollout(grid: Grid, g: ndarray[E], drive: ndarray[T,N], *, dt: float, leak: float) -> ndarray[T+1,N]`; first state is newly allocated zeros. No caller-supplied initial state or persistent activity cache.
 
-- [ ] **Step 1: Write the failing numerical tests.** Assert the following independent properties, including the stated invalid inputs:
+- [x] **Step 1: Write the failing numerical tests.** Assert the following independent properties, including the stated invalid inputs:
 
 ```python
 assert make_grid(9).nodes == 81
@@ -76,10 +76,10 @@ assert abs(projected.sum() - budget) <= 1e-10 * budget
 ```
 
 Use a one-step source followed by no drive to establish initial_mass; do not expect an all-zero initial state to decay. A corner impulse may reach only its three graph neighbours in the next state, proving no wrap. Assert ValueError for size <2, incorrect shape, NaN/Inf material or drive, negative leak, dt<=0, the violated stability bound and budgets outside `[E*lower,E*upper]`. Assert projection handles boundary budgets and does not mutate its input.
-- [ ] **Step 2: Run `PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 python -m unittest -v test_adaptive_medium`.** Expect an import failure before implementation.
-- [ ] **Step 3: Implement the declared interfaces.** Use float64. A dense 81-node operator is acceptable; projection uses clipped scalar-threshold bisection. Validate finite values before constructing the operator or updating state.
-- [ ] **Step 4: Rerun the same tests.** Expect all new numerical tests to pass with the stated tolerances.
-- [ ] **Step 5: Commit only this tested numerical core and its tests.** Message: `feat: add stable budgeted spatial conductance medium`.
+- [x] **Step 2: Run `PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 python -m unittest -v test_adaptive_medium`.** Expect an import failure before implementation.
+- [x] **Step 3: Implement the declared interfaces.** Use float64. A dense 81-node operator is acceptable; projection uses clipped scalar-threshold bisection. Validate finite values before constructing the operator or updating state.
+- [x] **Step 4: Rerun the same tests.** Expect all new numerical tests to pass with the stated tolerances.
+- [x] **Step 5: Commit only this tested numerical core and its tests.** Message: `feat: add stable budgeted spatial conductance medium`.
 
 ### Task 2: Sensory episodes, motor readout and the exact transient writer
 
@@ -94,7 +94,7 @@ Use a one-step source followed by no drive to establish initial_mass; do not exp
 - `loss_gradient(grid: Grid, g: ndarray[E], drive: ndarray[T,N], cfg: TaskConfig, target_sign: int) -> tuple[float, Episode, ndarray[E]]`.
 - `motor_response_map(grid: Grid, g: ndarray[E], cfg: TaskConfig) -> ndarray[2,N]`; exact fixed-material solver shortcut, not a learned decoder.
 
-- [ ] **Step 1: Write the failing task and gradient tests.** Verify each cue stays inside its specified 3 by 3 patch, both sources are nonnegative, amplitudes are in [0.8,1.2], seeded draws reproduce exactly, and training/evaluation jitter and noise differ as specified. Check exactly 24 nonzero drive states and motor integration indices 113..160 with dt weighting.
+- [x] **Step 1: Write the failing task and gradient tests.** Verify each cue stays inside its specified 3 by 3 patch, both sources are nonnegative, amplitudes are in [0.8,1.2], seeded draws reproduce exactly, and training/evaluation jitter and noise differ as specified. Check exactly 24 nonzero drive states and motor integration indices 113..160 with dt weighting.
 
 ```python
 np.testing.assert_array_equal(states[0], np.zeros(81))
@@ -109,10 +109,10 @@ assert balanced_response.action is None  # exact nonzero tie
 
 Use central-difference step 1e-6 on several non-boundary conductances, both target signs and two distinct materials. Repeat A, then B, then A with unchanged material; both A rollouts must be identical. Perturb one input array after a run and ensure stored earlier results do not change.
 For refinement, the original right-endpoint motor quadrature covers (11.2,16.0]; at dt=0.05 integrate states 225..320, with forcing for the first 48 steps. Do not simply double the original starting index.
-- [ ] **Step 2: Run the affected unittest module.** Expect missing-interface failures.
-- [ ] **Step 3: Implement the task and adjoint interfaces.** Use the spec's full ratio derivative and time-indexed adjoint, including q_T. Do not use clipping to hide nonfinite gradients. For the response shortcut, propagate the two fixed motor functionals backwards, accumulate their sensitivities to the first 24 source steps and compare to full rollouts. Its output has no class labels or fitted parameters.
-- [ ] **Step 4: Run numerical, cue and gradient tests.** Require every finite-difference and exact-map assertion to pass. Assert a material reset reproduces initial scores; no target may be passed to `rollout`, `sample_cue`, `read_motor` or `motor_response_map`.
-- [ ] **Step 5: Commit.** Message: `feat: add sensory task and exact transient material gradient`.
+- [x] **Step 2: Run the affected unittest module.** Expect missing-interface failures.
+- [x] **Step 3: Implement the task and adjoint interfaces.** Use the spec's full ratio derivative and time-indexed adjoint, including q_T. Do not use clipping to hide nonfinite gradients. For the response shortcut, propagate the two fixed motor functionals backwards, accumulate their sensitivities to the first 24 source steps and compare to full rollouts. Its output has no class labels or fitted parameters.
+- [x] **Step 4: Run numerical, cue and gradient tests.** Require every finite-difference and exact-map assertion to pass. Assert a material reset reproduces initial scores; no target may be passed to `rollout`, `sample_cue`, `read_motor` or `motor_response_map`.
+- [x] **Step 5: Commit.** Message: `feat: add sensory task and exact transient material gradient`.
 
 ### Task 3: Supervised training, traffic reinforcement and matched-input controls
 
@@ -129,7 +129,7 @@ For refinement, the original right-endpoint motor quadrature covers (11.2,16.0];
 
 Mapping tuples are `(0,1)` and `(1,0)`: entry `mapping[cue]` is the target motor, and the loss sign is `1-2*mapping[cue]`.
 
-- [ ] **Step 1: Write failing trainer and control tests.** With a very small update count, require deterministic equality on rerun, unchanged initial g, bounded/fixed-budget final g, finite curves and changed supervised material. Do not assert the full research gate succeeds. Both modes and the classifier must see byte-identical recorded cue draws; evaluation uses a separate SeedSequence child stream and never changes learned parameters.
+- [x] **Step 1: Write failing trainer and control tests.** With a very small update count, require deterministic equality on rerun, unchanged initial g, bounded/fixed-budget final g, finite curves and changed supervised material. Do not assert the full research gate succeeds. Both modes and the classifier must see byte-identical recorded cue draws; evaluation uses a separate SeedSequence child stream and never changes learned parameters.
 
 ```python
 np.testing.assert_array_equal(reloaded_g, trained_g)
@@ -139,10 +139,10 @@ np.testing.assert_array_equal(np.sort(shuffled_g), np.sort(run.final))
 ```
 
 Reject checkpoint wrong grid size, malformed JSON, NaN and incorrect budget. Verify exact ties and invalid episodes are scored wrong; reversing evaluator labels cannot change the returned motor responses. Count two forward and two adjoint rollouts per supervised minibatch, two forward rollouts for traffic, and zero adjoints for traffic.
-- [ ] **Step 2: Run `python -m unittest -v test_adaptive_medium_gate`.** Expect missing-interface failures.
-- [ ] **Step 3: Implement training and controls.** Average the two cue gradients before projection. Traffic uses positive average squared forward edge drops with the same initial rate and budget. Derive stream identifiers from seed and purpose; do not consume the evaluation stream while training. Measure actual solver work, checkpoint bytes, full-trajectory storage and elapsed time. The response map can accelerate evaluation only after Task 2 equivalence tests pass; report its actual build/query cost.
-- [ ] **Step 4: Rerun both adaptive test modules.** Require serialization, causal intervention construction and leakage tests to pass. The two-entry lookup gets true cue identity, is explicitly an oracle and has no material training cost.
-- [ ] **Step 5: Commit.** Message: `feat: train adaptive material with causal and digital controls`.
+- [x] **Step 2: Run `python -m unittest -v test_adaptive_medium_gate`.** Expect missing-interface failures.
+- [x] **Step 3: Implement training and controls.** Average the two cue gradients before projection. Traffic uses positive average squared forward edge drops with the same initial rate and budget. Derive stream identifiers from seed and purpose; do not consume the evaluation stream while training. Measure actual solver work, checkpoint bytes, full-trajectory storage and elapsed time. The response map can accelerate evaluation only after Task 2 equivalence tests pass; report its actual build/query cost.
+- [x] **Step 4: Rerun both adaptive test modules.** Require serialization, causal intervention construction and leakage tests to pass. The two-entry lookup gets true cue identity, is explicitly an oracle and has no material training cost.
+- [x] **Step 5: Commit.** Message: `feat: train adaptive material with causal and digital controls`.
 
 ### Task 4: Reproducible gate, development evidence and protocol lock
 
@@ -154,12 +154,12 @@ Reject checkpoint wrong grid size, malformed JSON, NaN and incorrect budget. Ver
 - `summarize(seed_results: list[dict], *, numerical_checks: dict) -> dict`; averages mappings and permutations inside each seed, then seeds equally. Produces each conjunct, overall pass/fail and all failed reasons.
 - `main(argv: list[str] | None = None) -> int`; CLI modes `development`, `smoke`, `full`, with `--out`, `--protocol` and full-only `--lock-commit`. Return 0 for a valid completed run even if its scientific gate fails; return 2 for invalid inputs or provenance. Numerical execution failures get an explicit failed receipt when possible and a nonzero status.
 
-- [ ] **Step 1: Write failing gate/CLI tests.** Use synthetic metric dictionaries to prove all five verdict conjuncts and each failure condition independently. Test unequal sample counts cannot give one seed extra weight. Low-energy examples remain in denominators, failures never disappear and exactly 20 deterministic permutations are used in full mode. Smoke can never label itself a full held-out pass.
-- [ ] **Step 2: Run gate tests and observe the expected missing functionality.** Include full-mode rejection for missing lock, dirty tracked files, wrong commit, code/JSON absent from that commit and any development seed entering the held-out list. Reject NaN receipt metrics; JSON serialization uses `allow_nan=False`.
-- [ ] **Step 3: Implement gate orchestration and provenance guards.** Full mode requires `--lock-commit` equal to current HEAD, a clean tracked tree and a tracked `locked: true` protocol at that commit. Include protocol SHA256 and code commit in receipts. A lock file never embeds its own commit hash. Read labels only in evaluation aggregation.
-- [ ] **Step 4: Run development only on seeds 11, 23, 41, both mappings.** Start with spec defaults and record curves, gradient checks, energy floors, all controls and wall time. Run dt/2 with doubled step counts and the same physical forcing/observation windows on both initial and trained material. Require maximum score difference <0.02 before locking. If defaults fail, diagnose using development data; document every changed constant. Do not run seeds 101..110 or change verdict thresholds.
-- [ ] **Step 5: Run adaptive tests and review the actual development report.** A learning failure is a reported research outcome, not grounds to weaken the gate. Record every seed and both mappings even when an average looks favourable.
-- [ ] **Step 6: Commit development implementation and evidence.** Message: `experiment: document adaptive-medium development protocol`. The later lock commit is deferred to Task 6 so replay and CI code also exist before full evaluation.
+- [x] **Step 1: Write failing gate/CLI tests.** Use synthetic metric dictionaries to prove all five verdict conjuncts and each failure condition independently. Test unequal sample counts cannot give one seed extra weight. Low-energy examples remain in denominators, failures never disappear and exactly 20 deterministic permutations are used in full mode. Smoke can never label itself a full held-out pass.
+- [x] **Step 2: Run gate tests and observe the expected missing functionality.** Include full-mode rejection for missing lock, dirty tracked files, wrong commit, code/JSON absent from that commit and any development seed entering the held-out list. Reject NaN receipt metrics; JSON serialization uses `allow_nan=False`.
+- [x] **Step 3: Implement gate orchestration and provenance guards.** Full mode requires `--lock-commit` equal to current HEAD, a clean tracked tree and a tracked `locked: true` protocol at that commit. Include protocol SHA256 and code commit in receipts. A lock file never embeds its own commit hash. Read labels only in evaluation aggregation.
+- [x] **Step 4: Run development only on seeds 11, 23, 41, both mappings.** Start with spec defaults and record curves, gradient checks, energy floors, all controls and wall time. Run dt/2 with doubled step counts and the same physical forcing/observation windows on both initial and trained material. Require maximum score difference <0.02 before locking. If defaults fail, diagnose using development data; document every changed constant. Do not run seeds 101..110 or change verdict thresholds.
+- [x] **Step 5: Run adaptive tests and review the actual development report.** A learning failure is a reported research outcome, not grounds to weaken the gate. Record every seed and both mappings even when an average looks favourable.
+- [x] **Step 6: Commit development implementation and evidence.** Message: `experiment: document adaptive-medium development protocol`. The later lock commit is deferred to Task 6 so replay and CI code also exist before full evaluation.
 
 ### Task 5: A visible, self-contained replay of actual episodes
 
@@ -168,11 +168,11 @@ Reject checkpoint wrong grid size, malformed JSON, NaN and incorrect budget. Ver
 **Consumes:** Grid, material and recorded trajectories from Tasks 1-4; raw motor responses and receipt metadata.
 **Produces:** `write_replay(path: Path, *, grid: Grid, receipt: dict, episodes: list[dict]) -> None`; each episode contains label text, initial/final material identity, cue, source, actual sampled states, time samples and raw motor energies. Gate flag `--replay PATH` generates before/after/frozen/erased episodes for development seed 11; full runs select seed 101 without tuning to the best seed.
 
-- [ ] **Step 1: Write failing replay tests.** Assert all sampled state values round-trip from embedded JSON, all labels/metadata are escaped, no external script/font/CDN is referenced, and a static results table plus noscript explanation exists. A literal `</script>` in metadata cannot break embedding. Missing or inconsistent episode arrays raise ValueError; do not substitute fake activity.
-- [ ] **Step 2: Run the replay tests.** Expect a missing module/interface failure.
-- [ ] **Step 3: Implement the HTML renderer.** Use canvas for edge widths/material and node activity with play/pause, cue/arm selection and time scrubbing. Show physical time, seed, mapping, fixed material budget, motor energies and the fact this is a replay. Bundle its dataset. Thresholded edges disclose the threshold; no training occurs inside the replay.
-- [ ] **Step 4: Generate a development replay and visually inspect it.** Use available browser tooling if available; otherwise render deterministic snapshots of the same data for visual QA and record that interactive browser behaviour is unverified. Check narrow/wide layouts, controls, label readability and correspondence with the JSON. Do not add a dependency solely to launch a browser.
-- [ ] **Step 5: Rerun replay tests and commit.** Message: `viz: add data-backed adaptive-medium replay`.
+- [x] **Step 1: Write failing replay tests.** Assert all sampled state values round-trip from embedded JSON, all labels/metadata are escaped, no external script/font/CDN is referenced, and a static results table plus noscript explanation exists. A literal `</script>` in metadata cannot break embedding. Missing or inconsistent episode arrays raise ValueError; do not substitute fake activity.
+- [x] **Step 2: Run the replay tests.** Expect a missing module/interface failure.
+- [x] **Step 3: Implement the HTML renderer.** Use canvas for edge widths/material and node activity with play/pause, cue/arm selection and time scrubbing. Show physical time, seed, mapping, fixed material budget, motor energies and the fact this is a replay. Bundle its dataset. Thresholded edges disclose the threshold; no training occurs inside the replay.
+- [x] **Step 4: Generate a development replay and visually inspect it.** Use available browser tooling if available; otherwise render deterministic snapshots of the same data for visual QA and record that interactive browser behaviour is unverified. Check narrow/wide layouts, controls, label readability and correspondence with the JSON. Do not add a dependency solely to launch a browser.
+- [x] **Step 5: Rerun replay tests and commit.** Message: `viz: add data-backed adaptive-medium replay`.
 
 ### Task 6: CI, lock, held-out run and a measured verdict
 
@@ -198,7 +198,7 @@ measurements and honest publication. All five Review Focus entries have owning
 tests. The saved-material reset and the full-rollout/response-map equivalence
 checks prevent two especially plausible false positives.
 
-No implementation has begun. Recommended execution method: **Native**. These
+Execution method approved: **Native**. Tasks 1-5 are complete; development measurements are documented in `docs/adaptive_medium.md`. These
 six tasks share a small set of tightly coupled numerical interfaces; one
 implementer can preserve the definitions and check the whole branch with a
 fresh reviewer at the end. The alternative is subagent-driven implementation

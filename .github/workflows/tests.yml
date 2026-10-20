@@ -22,7 +22,12 @@ jobs:
       - run: OPENBLAS_NUM_THREADS=1 python -m unittest -v test_outer_lens
       - run: OPENBLAS_NUM_THREADS=1 python outer_lens.py --out results/outer_lens.json
       - run: OPENBLAS_NUM_THREADS=1 python sweep_outer_lens.py --out results/outer_lens_sweep.json
+      - run: OPENBLAS_NUM_THREADS=1 python -m unittest -v test_adaptive_medium test_adaptive_medium_gate
+      - run: OPENBLAS_NUM_THREADS=1 python adaptive_medium_gate.py --mode smoke --out results/adaptive_medium/ci-smoke.json
       - uses: actions/upload-artifact@v4
         with:
           name: brainboxsol-receipts
-          path: results/*.json
+          path: |
+            results/*.json
+            results/adaptive_medium/*.json
+            results/adaptive_medium/*.html

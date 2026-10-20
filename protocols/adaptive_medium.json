@@ -1,0 +1,54 @@
+{
+  "version": "adaptive-material-v1",
+  "locked": true,
+  "config": {
+    "size": 9,
+    "dt": 0.1,
+    "leak": 0.02,
+    "mean": 0.08,
+    "lower": 0.005,
+    "upper": 0.4,
+    "steps": 160,
+    "pulse": 24,
+    "read_start": 113,
+    "width": 0.7,
+    "train_jitter": 0.25,
+    "eval_jitter": 0.35,
+    "train_noise": 0.05,
+    "eval_noise": 0.1,
+    "amplitude_min": 0.8,
+    "amplitude_max": 1.2,
+    "ratio_epsilon": 1e-09,
+    "energy_floor": 1e-08,
+    "target_magnitude": 0.8
+  },
+  "updates": 600,
+  "rate": 0.05,
+  "per_cue": 100,
+  "shuffle_count": 20,
+  "development_seeds": [
+    11,
+    23,
+    41
+  ],
+  "heldout_seeds": [
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110
+  ],
+  "thresholds": {
+    "accuracy": 0.9,
+    "minimum_seed": 0.8,
+    "gain": 0.2,
+    "erase_fraction": 0.5,
+    "shuffle_gain": 0.1,
+    "refinement": 0.02
+  }
+}

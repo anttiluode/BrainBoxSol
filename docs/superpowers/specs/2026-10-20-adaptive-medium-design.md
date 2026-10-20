@@ -3,9 +3,9 @@
 Date: 2026-10-20 (Europe/Helsinki)
 
 Status: approved by the user on 2026-10-20 at 11:50 Europe/Helsinki.
-No adaptive-medium implementation or results exist in this change.
-The [implementation plan](../plans/2026-10-20-adaptive-medium.md) is ready for
-review and execution-method selection.
+Native execution of the [implementation plan](../plans/2026-10-20-adaptive-medium.md)
+was approved at 12:02. Implementation and development evidence are now in
+[the experiment report](../../adaptive_medium.md); this document preserves the approved design.
 
 ## Intended outcome
 
