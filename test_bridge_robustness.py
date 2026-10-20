@@ -2,6 +2,12 @@
 import copy
 import importlib.util
 import unittest
+import json
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
 import numpy as np
 from phase_bridge_gate import PhaseMedium, teacher, homeostat
 
@@ -38,7 +44,8 @@ class BridgeRobustnessTests(unittest.TestCase):
         self.assertGreater(np.std(f[:, self.box.owner >= 0]), .01)
 
     def test_corrupted_objective_jacobian_matches_finite_difference(self):
-        f = br.noise_factors(self.box, np.random.default_rng(9), "mixed", .25, 3)
+        f = (br.noise_factors(self.box, np.random.default_rng(9), "mixed", .25, 3)
+             * br.noise_factors(self.box, np.random.default_rng(19), "interior", .2, 3))
         state = self.box.initial.copy()
         residual, jac = br.residual_jacobian(self.box, state, self.target, self.base, f)
         for col, edge in enumerate(np.flatnonzero(self.box.owner >= 0)):
@@ -89,9 +96,54 @@ class BridgeRobustnessTests(unittest.TestCase):
 
     def test_relative_reduction_is_unresolved_at_numerical_floor(self):
         receipt = br.run_experiment("smoke")
-        claim = receipt["summary"]["claims"]["combined_vs_repair"]
+        cfg = receipt["effective_config"]
+        for device in receipt["devices"]:
+            for row in device["evaluation"]:
+                if (row["family"] == cfg["evaluation"]["primary_family"]
+                        and row["strength"] == cfg["evaluation"]["primary_strength"]):
+                    row["target_errors"]["standard_repaired"] = [0.] * len(row["factors"])
+        summary = br.summarize(receipt["devices"], cfg, False)
+        claim = summary["claims"]["combined_vs_repair"]
         self.assertIsNone(claim["relative_error_reduction"])
         self.assertFalse(claim["criteria"]["relative_error_reduction"])
+
+
+    def test_cost_audit_rejects_forged_update_count(self):
+        receipt = br.run_experiment("smoke")
+        receipt["devices"][0]["training"]["standard"]["linear_update_solves"] += 1
+        with self.assertRaises(ValueError):
+            br.audit_receipt(receipt)
+
+    def test_full_audit_rejects_invalid_source_commit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in br.SOURCE_FILES:
+                dest = root/name
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(br.ROOT/name, dest)
+            protocol = br.load_protocol()
+            protocol["seeds"]["full"] = [9001]
+            protocol["training"].update(steps=2, worlds=2)
+            protocol["evaluation"].update(draws=1)
+            (root/"protocols/bridge_robustness.json").write_text(json.dumps(protocol))
+            def git(*args):
+                return subprocess.check_output(["git", *args], cwd=root, text=True, stderr=subprocess.DEVNULL).strip()
+            git("init")
+            git("add", ".")
+            git("-c","user.name=Test","-c","user.email=test@example.invalid",
+                "commit","-m","test lock")
+            lock = git("rev-parse","HEAD")
+            subprocess.run([sys.executable,"bridge_robustness.py","--mode","full",
+                            "--lock-commit",lock,"--out","receipt.json"],
+                           cwd=root, check=True, stdout=subprocess.DEVNULL)
+            changed = json.loads((root/"receipt.json").read_text())
+            changed["lock_commit"] = "bogus"
+            (root/"receipt.json").write_text(json.dumps(changed))
+            result = subprocess.run(
+                [sys.executable,"-c",
+                 "import json; import bridge_robustness as b; b.audit_receipt(json.load(open('receipt.json')))"],
+                cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            self.assertNotEqual(result.returncode, 0, "forged full-run lock incorrectly passed audit")
 
     def test_full_run_rejects_missing_lock_before_evaluation(self):
         with self.assertRaisesRegex(ValueError, "lock"):
