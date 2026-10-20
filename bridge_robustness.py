@@ -9,6 +9,7 @@ import copy
 import hashlib
 import html
 import json
+import re
 from pathlib import Path
 import subprocess
 import time
@@ -126,8 +127,28 @@ def effective_config(protocol, mode):
     cfg = copy.deepcopy(protocol)
     if mode == "smoke":
         cfg["training"].update(steps=4, worlds=2)
-        cfg["evaluation"].update(strengths=[.6], families=["coherent", "interior"], draws=2)
+        cfg["evaluation"].update(strengths=[.6], families=["independent", "coherent", "interior"], draws=2)
     return cfg
+
+
+def source_hashes_at_commit(lock_commit):
+    """Bind provenance to actual Git blobs, not just a nonempty receipt label."""
+    if not isinstance(lock_commit,str) or not re.fullmatch(r"[0-9a-f]{40}",lock_commit):
+        raise ValueError("lock must be an exact full commit SHA")
+    try:
+        resolved = subprocess.check_output(
+            ["git","rev-parse","--verify",lock_commit+"^{commit}"],
+            cwd=ROOT,text=True,stderr=subprocess.DEVNULL).strip()
+        if resolved != lock_commit:
+            raise ValueError("lock commit did not resolve exactly")
+        return {
+            path: hashlib.sha256(subprocess.check_output(
+                ["git","show",lock_commit+":"+path],cwd=ROOT,
+                stderr=subprocess.DEVNULL)).hexdigest()
+            for path in SOURCE_FILES
+        }
+    except (subprocess.CalledProcessError,FileNotFoundError) as error:
+        raise ValueError("lock source commit is unavailable") from error
 
 
 def lock_source(lock_commit, protocol):
@@ -135,18 +156,17 @@ def lock_source(lock_commit, protocol):
         raise ValueError("full mode requires an exact clean lock commit")
     if not protocol.get("locked"):
         raise ValueError("protocol is not locked")
-    def git(*args):
-        return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
-    head = git("rev-parse", "HEAD")
-    expected = git("rev-parse", lock_commit + "^{commit}")
-    if head != expected or git("status", "--porcelain", "--untracked-files=no"):
+    expected_hashes = source_hashes_at_commit(lock_commit)
+    head = subprocess.check_output(["git","rev-parse","HEAD"],cwd=ROOT,text=True).strip()
+    dirty = subprocess.check_output(
+        ["git","status","--porcelain","--untracked-files=no"],cwd=ROOT,text=True).strip()
+    if head != lock_commit or dirty:
         raise ValueError("full mode requires a clean checkout at the lock commit")
-    for path in SOURCE_FILES:
-        original = subprocess.check_output(["git", "show", expected+":"+path], cwd=ROOT)
-        if original != (ROOT/path).read_bytes():
-            raise ValueError("lock source mismatch: "+path)
-    return expected
-
+    current = {path:hashlib.sha256((ROOT/path).read_bytes()).hexdigest()
+               for path in SOURCE_FILES}
+    if current != expected_hashes:
+        raise ValueError("lock source mismatch")
+    return lock_commit
 
 def evaluate_device(box, states, targets, baseline, cfg, seed):
     """Common random numbers, no targets or readout used by interface repair."""
@@ -217,17 +237,19 @@ def summarize(devices, cfg, held_out):
         difference = c-t
         rng = rng_for(0, 8000)
         bootstrap = difference[rng.integers(0, len(devices), (2000,len(devices)))].mean(1)
-        reduction = float((c.mean()-t.mean())/max(float(c.mean()), 1e-12))
+        resolved = float(c.mean()) > claim_rules["relative_error_floor"]
+        reduction = float((c.mean()-t.mean())/c.mean()) if resolved else None
         positive = float(np.mean(difference > 1e-12))
         penalty = clean["noise_aware"]-clean["standard"]
         checks = {
-            "relative_error_reduction": reduction >= claim_rules["min_relative_error_reduction"],
+            "relative_error_reduction": reduction is not None and reduction >= claim_rules["min_relative_error_reduction"],
             "device_consistency": positive >= claim_rules["min_positive_device_fraction"],
             "clean_cost": penalty <= claim_rules["max_clean_error_penalty"],
         }
         claims[label] = {
             "candidate": candidate, "control": control,
-            "relative_error_reduction": reduction, "positive_device_fraction": positive,
+            "relative_error_reduction": reduction, "relative_effect_resolved": resolved,
+            "positive_device_fraction": positive,
             "clean_error_penalty": penalty,
             "mean_paired_error_reduction": float(difference.mean()),
             "paired_device_bootstrap_95": np.quantile(bootstrap,[.025,.975]).tolist(),
@@ -315,8 +337,9 @@ def audit_receipt(receipt):
     held_out = mode == "full"
     if receipt["held_out"] != held_out or receipt["scientific_claims_evaluated"] != held_out:
         raise ValueError("invalid held-out flag")
-    if held_out and not receipt.get("lock_commit"):
-        raise ValueError("missing lock provenance")
+    if held_out:
+        lock_hashes = source_hashes_at_commit(receipt.get("lock_commit"))
+        _close(receipt["source_sha256"],lock_hashes,"locked source hashes")
     cfg = effective_config(receipt["protocol"],mode)
     _close(receipt["effective_config"],cfg,"config")
     _close([d["seed"] for d in receipt["devices"]],cfg["seeds"][mode],"device seeds")
@@ -354,6 +377,14 @@ def audit_receipt(receipt):
             calls = (cfg["training"]["steps"]+1)*cfg["training"]["worlds"]*box.blocks
             for key in ("read_calls","forward_solves","adjoint_solves"):
                 _close(d["training"][writer][key],calls,"training counts")
+            info = d["training"][writer]
+            _close(info["linear_update_solves"],cfg["training"]["steps"],"linear solves")
+            _close(info["bridge_writes"],0,"bridge writes")
+            history = np.asarray(info["loss_before_each_update"])
+            if (history.shape != (cfg["training"]["steps"],)
+                    or not np.all(np.isfinite(history)) or np.any(history < 0)):
+                raise ValueError("invalid recorded training history")
+            _close(float(history[0]),info["initial_loss"],"initial history loss")
         _close(d["frozen_clean_error"],normalized_error(baseline,targets,baseline),"frozen clean")
         expected = evaluate_device(box,states,targets,baseline,cfg,seed)
         _close(d["evaluation"],expected,"evaluation")
@@ -363,8 +394,8 @@ def audit_receipt(receipt):
     _close(receipt["source_sha256"],expected_hashes,"source hashes")
     return {"passed": True, "devices_checked": len(receipt["devices"]),
             "paired_arm_evaluations_recomputed": evaluations,
-            "training_rerun": False,
-            "scope": "Regenerated inputs, checked stored materials/fit objectives/costs, recomputed all evaluation and summary; did not retrain."}
+            "training_rerun": False, "intermediate_training_losses_recomputed": False,
+            "scope": "Regenerated inputs, checked stored materials/fit objectives/costs, recomputed all evaluation and summary; did not retrain or recompute intermediate training losses."}
 
 
 def render_report(receipt):
