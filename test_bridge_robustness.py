@@ -162,5 +162,39 @@ class BridgeRobustnessTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             br.audit_receipt(bad)
 
+
+PORTABLE = importlib.util.find_spec("audit_bridge_receipt") is not None
+if PORTABLE:
+    import audit_bridge_receipt as pa
+
+class PortableAuditAvailabilityTests(unittest.TestCase):
+    def test_portable_audit_exists(self):
+        self.assertTrue(PORTABLE, "portable receipt audit is missing")
+
+@unittest.skipUnless(PORTABLE, "portable audit not implemented yet")
+class PortableAuditTests(unittest.TestCase):
+    def test_one_ulp_bridge_regeneration_is_tolerated_without_mutating_receipt(self):
+        receipt = br.run_experiment("smoke")
+        device = receipt["devices"][0]
+        box = PhaseMedium(blocks=receipt["effective_config"]["blocks"],seed=device["seed"])
+        edge = int(np.flatnonzero(box.owner == -1)[0])
+        device["materials"]["standard"][edge] = float(np.nextafter(box.initial[edge], np.inf))
+        before = copy.deepcopy(receipt)
+        with self.assertRaises(AssertionError):
+            br.audit_receipt(receipt)
+        audit = pa.audit_portable(receipt)
+        self.assertTrue(audit["passed"])
+        self.assertEqual(audit["roundoff_normalization"]["changed_bridge_values"],1)
+        self.assertEqual(receipt,before)
+
+    def test_material_bridge_changes_larger_than_roundoff_are_rejected(self):
+        receipt = br.run_experiment("smoke")
+        device = receipt["devices"][0]
+        box = PhaseMedium(blocks=receipt["effective_config"]["blocks"],seed=device["seed"])
+        edge = int(np.flatnonzero(box.owner == -1)[0])
+        device["materials"]["standard"][edge] += 1e-10
+        with self.assertRaises(ValueError):
+            pa.audit_portable(receipt)
+
 if __name__ == "__main__":
     unittest.main()
