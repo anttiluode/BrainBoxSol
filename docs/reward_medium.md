@@ -35,4 +35,41 @@ The replay displays recorded Before/Learned/Frozen/Erased trajectories for both 
 
 ## Result
 
-Fresh held-out evaluation pending. This section will be replaced with the complete result, including negative findings.
+The locked fresh-seed gate **failed**. Failed criteria: accuracy. There were 4,000 primary held-out decisions across ten seeds and both mappings. No settings were changed after the lock commit `09a53897e35f1252fcd38294f48fa1dd4c33217a`.
+
+| Arm | Mean accuracy | Seed mean range |
+|---|---:|---:|
+| reward | 75.00% | 75.00%–75.00% |
+| shuffled_reward | 48.90% | 35.75%–53.25% |
+| random_updates | 50.00% | 50.00%–50.00% |
+| teacher | 96.25% | 77.50%–100.00% |
+| frozen | 50.00% | 50.00%–50.00% |
+| erased | 50.00% | 50.00%–50.00% |
+| shuffled_material | 52.59% | 50.75%–53.64% |
+
+| Seed | Aligned mapping | Reversed mapping |
+|---|---:|---:|
+| 301 | 100.0% | 50.0% |
+| 302 | 100.0% | 50.0% |
+| 303 | 100.0% | 50.0% |
+| 304 | 100.0% | 50.0% |
+| 305 | 100.0% | 50.0% |
+| 306 | 100.0% | 50.0% |
+| 307 | 100.0% | 50.0% |
+| 308 | 100.0% | 50.0% |
+| 309 | 100.0% | 50.0% |
+| 310 | 100.0% | 50.0% |
+
+| Training arm | Forward solves per mapping | Adjoint solves | Mean seconds per mapping |
+|---|---:|---:|---:|
+| reward | 8,192 | 0 | 9.15 |
+| shuffled_reward | 8,192 | 0 | 9.33 |
+| random_updates | 8,192 | 0 | 9.21 |
+| teacher | 1,200 | 1,200 | 2.27 |
+
+All fields retain 272 conductances (2,176 float64 payload bytes), with a fixed total of 21.76. Each reward arm used 163,840 forward training trials across the twenty runs. Wall times depend on this machine; forward and adjoint counts are the portable budget comparison.
+
+The aggregate score must be read alongside the mapping breakdown: the original geometry already solves the aligned mapping, so improvement on the reversed mapping is the informative learning test. Erasure restores the initial field, demonstrating where any retained improvement resides. This is a limited association experiment using global parameter search. It establishes neither general intelligence nor a biological learning mechanism.
+
+The code review found no remaining critical or important issues. All 40 unit tests and the GitHub CPU workflow passed before the fresh run. An independent recomputation of receipt energies, scores, protocol hash, input digests, and training solve counts is recorded in `results/reward_medium/audit.json`.
+

@@ -163,3 +163,5 @@ BrainBoxSol's limited implementation tests an established projection idea agains
 ### Reward-only conductance writing
 
 The next bounded experiment replaces the explicit teacher gradient with one-bit action rewards. See [method, controls, and limitations](docs/reward_medium.md) and the [locked protocol](protocols/reward_medium.json). This tests learning in a small physical medium; it does not establish a brain.
+
+Locked reward result: **75% held-out accuracy** across ten fresh seeds, versus 50% frozen/erased/random updates, 48.9% shuffled reward, and 96.25% teacher. The 80% gate **failed**; erasure removed the learned gain. See the [complete report](docs/reward_medium.md), [receipt](results/reward_medium/full.json), [result chart](results/reward_medium/results.png), and [recorded replay](results/reward_medium/replay.html).
