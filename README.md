@@ -12,6 +12,12 @@ Small CPU experiments in persistent conductances, transient responses, and histo
 
 The temporal-port experiment uses offline waveform conditioning and a calibrated threshold. Raw charge alone also scored 100%; it does not show that every scalar readout is blind. These are controlled simulation mechanisms, not a complete brain or a demonstrated general AI advantage.
 
+## Noise-aware writing × interface repair — October 20 follow-up
+
+**Locked result: both proposed benefits failed.** On ten fresh devices under independent bridge drift, ordinary error was **0.02617**, noise-aware **0.02730**, interface repair **0.001107**, and combined **0.003696** (normalized response errors; lower is better). Noise-aware writing introduced a clean-fit penalty and did not complement repair. Training budgets were matched. V1's development-informed primary correction and all receipts remain preserved.
+
+[Method and full results](docs/bridge_robustness.md) · [Visual report](results/bridge_robustness/report.html) · [Raw fresh receipt](results/bridge_robustness/full.json) · [Independent code review](docs/bridge_robustness_review.md)
+
 ## Install and check everything
 
 ```sh

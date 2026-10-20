@@ -33,3 +33,30 @@ V1 chose coherent interface drift as the primary condition. On development seeds
 The v1 development result was unfavorable to noise training: ordinary clean error was about 3e-14, noise-aware error 0.00397; independent-drift error at 0.6 was 0.02309 ordinary, 0.02474 noise-aware, 0.001176 repair, and 0.003979 combined. No learning hyperparameter was changed in response. Both proposed benefits may fail on fresh seeds.
 
 A relative change with control error below 1e-8 is now marked unresolved, not divided by a numerical floor to manufacture huge percentages. The source-lock audit resolves the recorded commit and checks its actual source blobs. Training endpoint objectives, immutable bridges and deterministic solve counts are audited; intermediate optimization losses are stored but not independently recomputed without retraining.
+
+## Locked fresh-device outcome
+
+**Both predeclared benefits failed.** Exact source/protocol lock: `7cb745c7d0b197742616401a5d1838d13f19854e`. Full run: [39472165848](https://github.com/anttiluode/BrainBoxSol/actions/runs/39472165848). No settings changed after this lock. Ten untouched devices (7001–7010), twelve paired draws per family/strength.
+
+Primary independent bridge drift, log-noise strength 0.6; mean absolute target-response error normalized by the device's initial response (lower is better):
+
+| Arm | Mean target error | Mean change from its own trained response |
+|---|---:|---:|
+| Ordinary writing | 0.02617034 | 0.02617034 |
+| Noise-aware writing | 0.02729738 | 0.02623119 |
+| Interface repair | 0.00110702 | 0.00110702 |
+| Noise-aware + repair | 0.00369595 | 0.00107218 |
+
+Noise-aware writing is **4.31% worse** than ordinary writing and improves only 1/10 device means. Combined writing/repair is **3.34× worse** than repair alone and improves 0/10. Repair alone reduces ordinary error by **95.77%**. A frozen untrained material scores 0.02713311.
+
+Ordinary clean error is 3.814e-14, noise-aware clean error 0.00382452. The 0.00382452 clean penalty exceeds the allowed 0.002. Device-paired bootstrap 95% intervals for error reduction are negative: noise-aware vs ordinary [-0.00169868, -0.00058963]; combined vs repair [-0.00355126, -0.00164765]. These intervals are descriptive and resample devices, not ports or drift trials.
+
+The combined arm changes slightly less from its own trained output than repair alone, yet is less correct because its clean target fit is biased. **Response stability and task accuracy are different measurements.** This is why both were recorded.
+
+Each writer used 2352 forward and 2352 adjoint solves plus 48 update solves per device, identically across arms. Cost matching does not make this competitive with a direct digital target table.
+
+The numerical audit recomputed all **3840** paired arm evaluations, regenerated RNG inputs, verified source hashes and checked endpoint losses and deterministic training costs. All **63 repository tests** passed. Intermediate optimization trajectories were not independently rerun. Both the fresh receipt and all development versions remain available.
+
+[Full receipt](../results/bridge_robustness/full.json) · [Self-contained visual report](../results/bridge_robustness/report.html) · [Implementation review](bridge_robustness_review.md).
+
+Interpretation: this particular noise-aware writer did not transfer a useful robustness benefit to fresh physical drift, despite the reasonable analogy to NCM conditioning corruption. It does not rule out all noise-aware methods or larger training banks. Do not retune these full seeds and re-label the result held out.

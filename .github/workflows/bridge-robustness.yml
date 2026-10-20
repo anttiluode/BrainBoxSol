@@ -35,7 +35,7 @@ jobs:
         run: python -m unittest discover -v
       - name: Development or locked evaluation
         run: |
-          if [ -f protocols/bridge_robustness_run.json ]; then
+          if [ "$GITHUB_EVENT_NAME" = push ] && git diff --name-only HEAD^ HEAD | rg -Fxq protocols/bridge_robustness_run.json; then
             BB_LOCK=$(python -c 'import json; print(json.load(open("protocols/bridge_robustness_run.json"))["lock_commit"])')
             git checkout "$BB_LOCK"
             python bridge_robustness.py --mode full --lock-commit "$BB_LOCK" --out results/bridge_robustness/full.json

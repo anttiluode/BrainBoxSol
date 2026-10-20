@@ -28,6 +28,8 @@ jobs:
       - run: OPENBLAS_NUM_THREADS=1 python reward_gate.py --mode smoke --out results/reward_medium/ci-smoke.json
       - run: OPENBLAS_NUM_THREADS=1 python -m unittest -v test_history_waveform test_waveform_gate
       - run: OPENBLAS_NUM_THREADS=1 python waveform_gate.py --mode smoke --out results/history_waveform/ci-smoke.json
+      - run: OPENBLAS_NUM_THREADS=1 python -m unittest -v test_bridge_robustness
+      - run: OPENBLAS_NUM_THREADS=1 python bridge_robustness.py --mode smoke --out results/bridge_robustness/ci-smoke.json
       - uses: actions/upload-artifact@v4
         with:
           name: brainboxsol-receipts
@@ -37,3 +39,4 @@ jobs:
             results/adaptive_medium/*.html
             results/reward_medium/*.json
             results/history_waveform/*.json
+            results/bridge_robustness/*.json
