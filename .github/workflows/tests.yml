@@ -19,6 +19,9 @@ jobs:
       - run: OPENBLAS_NUM_THREADS=1 python sweep.py --out results/sweep.json
       - run: OPENBLAS_NUM_THREADS=1 python -m unittest -v test_phase_bridge_gate
       - run: OPENBLAS_NUM_THREADS=1 python phase_bridge_gate.py --out results/phase_bridge.json
+      - run: OPENBLAS_NUM_THREADS=1 python -m unittest -v test_outer_lens
+      - run: OPENBLAS_NUM_THREADS=1 python outer_lens.py --out results/outer_lens.json
+      - run: OPENBLAS_NUM_THREADS=1 python sweep_outer_lens.py --out results/outer_lens_sweep.json
       - uses: actions/upload-artifact@v4
         with:
           name: brainboxsol-receipts
