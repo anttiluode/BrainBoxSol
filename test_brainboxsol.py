@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from brainboxsol import Medium, run_gate
+from brainboxsol import Medium, run_gate, teacher_medium, write_one, write_protected
 
 
 class MediumTests(unittest.TestCase):
@@ -31,6 +31,21 @@ class MediumTests(unittest.TestCase):
         e0 = np.linalg.norm(self.receipt['pre_drift_error'])
         e1 = np.linalg.norm(self.receipt['post_local_bridge_drift_error'])
         self.assertGreater(e1, e0 * 5)
+
+    def test_projected_update_disturbs_old_readout_less_than_global(self):
+        box = self.box
+        baseline = box.values(box.initial)
+        target = box.values(teacher_medium(box))
+        learned = box.initial.copy()
+        for _ in range(80):
+            write_one(box, learned, 0, target, baseline, 'global')
+        old_response = box.read(learned, 0)[0]
+        protected, global_writer = learned.copy(), learned.copy()
+        write_protected(box, protected, 1, target, baseline, [0])
+        write_one(box, global_writer, 1, target, baseline, 'global')
+        protected_drift = abs(box.read(protected, 0)[0] - old_response)
+        global_drift = abs(box.read(global_writer, 0)[0] - old_response)
+        self.assertLess(protected_drift, global_drift)
 
     def test_impulse_has_no_hidden_fast_memory_between_queries(self):
         t = np.linspace(0., 10., 30)
