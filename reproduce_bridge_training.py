@@ -116,6 +116,14 @@ def write_new(path, value):
         stream.write("\n")
 
 
+def runtime_environment():
+    return {"python":platform.python_version(), "numpy":np.__version__,
+        "platform":platform.platform(), "machine":platform.machine(),
+        "thread_environment":{k:os.environ.get(k) for k in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS")},
+        "numpy_build":getattr(np.__config__, "CONFIG", {
+            "note":"NumPy build configuration attribute unavailable"})}
+
+
 def worker(source, out):
     # Source directory goes ahead of the audit branch in the fresh interpreter.
     sys.path.insert(0, str(source))
@@ -142,10 +150,7 @@ def worker(source, out):
         br.fit_material = fit
     br.lock_source(LOCK, br.load_protocol())
     write_new(out, {"rerun":rerun, "observed":counts,
-        "environment":{"python":platform.python_version(), "numpy":np.__version__,
-            "platform":platform.platform(), "machine":platform.machine(),
-            "thread_environment":{k:os.environ.get(k) for k in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS")},
-            "numpy_build":np.__config__.CONFIG}})
+        "environment":runtime_environment()})
 
 
 def main():

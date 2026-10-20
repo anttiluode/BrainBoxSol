@@ -18,7 +18,7 @@ The temporal-port experiment uses offline waveform conditioning and a calibrated
 
 [Method and full results](docs/bridge_robustness.md) · [Visual report](results/bridge_robustness/report.html) · [Raw fresh receipt](results/bridge_robustness/full.json) · [Independent code review](docs/bridge_robustness_review.md)
 
-The separate [locked-training audit](results/bridge_robustness/training-audit.json) independently reran both writers on all ten devices: 900 final conductances and 960 intermediate losses reproduced within fixed tolerances, with actual solve counts checked. The failed claims remain failed; the original receipt is unchanged.
+The separate [locked-training audit](results/bridge_robustness/training-audit-portable.json) independently reran both writers on all ten devices: 900 final conductances and 960 intermediate losses reproduced within fixed tolerances, with actual solve counts checked. The failed claims remain failed; the original receipt is unchanged.
 
 ## Install and check everything
 

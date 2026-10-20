@@ -2,6 +2,8 @@
 import copy
 import importlib.util
 import unittest
+from unittest import mock
+from types import SimpleNamespace
 import numpy as np
 import bridge_robustness as br
 
@@ -76,6 +78,14 @@ class TrainingAuditTests(unittest.TestCase):
         bad["devices"][0]["seed"] += 1
         with self.assertRaises(ValueError):
             audit.compare_training(bad, self.receipt, self.observed)
+
+    def test_runtime_metadata_supports_missing_numpy_build_config(self):
+        self.assertTrue(callable(getattr(audit, "runtime_environment", None)),
+                        "portable runtime metadata collector is missing")
+        with mock.patch.object(np, "__config__", SimpleNamespace()):
+            metadata = audit.runtime_environment()
+        self.assertEqual(metadata["numpy"], np.__version__)
+        self.assertEqual(metadata["numpy_build"], {"note":"NumPy build configuration attribute unavailable"})
 
 
 if __name__ == "__main__":
