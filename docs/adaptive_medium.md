@@ -55,6 +55,90 @@ OPENBLAS_NUM_THREADS=1 python adaptive_medium_gate.py --mode smoke --out results
 OPENBLAS_NUM_THREADS=1 python adaptive_medium_gate.py --mode development --out results/adaptive_medium/development.json
 ```
 
-The held-out command and result will be added after the complete implementation
-is committed and locked. Raw development measurements are in
-`results/adaptive_medium/development.json`.
+Raw development measurements are in `results/adaptive_medium/development.json`.
+
+## Locked held-out result
+
+**PASS, within the stated two-cue graph task.** The complete code and protocol
+were committed as `032974c6269d54ebe24c1c3ec0e12ffa07028ea6` before any held-out
+training. Seeds 101–110 each ran both mappings, with 100 fresh variants per cue:
+4,000 learned-material decisions, all correct. No settings changed after
+development and no held-out run was selected or retuned.
+
+| Arm | Mean accuracy | Seed standard deviation | Seed range |
+|---|---:|---:|---:|
+| learned | 1.000000 | 0.000000 | 1.000000–1.000000 |
+| frozen | 0.500000 | 0.000000 | 0.500000–0.500000 |
+| erased | 0.500000 | 0.000000 | 0.500000–0.500000 |
+| shuffled | 0.503275 | 0.002528 | 0.500000–0.507250 |
+| activity_only | 0.500000 | 0.000000 | 0.500000–0.500000 |
+| linear | 1.000000 | 0.000000 | 1.000000–1.000000 |
+| lookup | 1.000000 | 0.000000 | 1.000000–1.000000 |
+
+Accuracy, gain over frozen, erasure, shuffle sensitivity, episode validity and
+numerical checks all passed their unchanged thresholds. No motor-energy
+failures occurred in any material arm, including all 20 shuffle permutations.
+
+| Seed | Learned | Frozen / erased / traffic | Shuffled | Linear / oracle |
+|---|---:|---:|---:|---:|
+| 101 | 1.000 | 0.500 | 0.505625 | 1.000 |
+| 102 | 1.000 | 0.500 | 0.502000 | 1.000 |
+| 103 | 1.000 | 0.500 | 0.500000 | 1.000 |
+| 104 | 1.000 | 0.500 | 0.500000 | 1.000 |
+| 105 | 1.000 | 0.500 | 0.507250 | 1.000 |
+| 106 | 1.000 | 0.500 | 0.501250 | 1.000 |
+| 107 | 1.000 | 0.500 | 0.502375 | 1.000 |
+| 108 | 1.000 | 0.500 | 0.505375 | 1.000 |
+| 109 | 1.000 | 0.500 | 0.502500 | 1.000 |
+| 110 | 1.000 | 0.500 | 0.506375 | 1.000 |
+
+Maximum time-refinement score difference: 0.002063; zero changed actions.
+Minimum total motor energy across all evaluated material arms: 0.00632627.
+The spot-check gradient error was 1.31e-10;
+full-rollout/response-map energy discrepancy was 2.08e-17.
+
+The full local run took 89.73 seconds, including all controls.
+Mean supervised-medium training time per seed/mapping was 2.730 s
+(range 2.206–3.544); the linear classifier averaged
+0.0741 s (range 0.0570–0.1635). Timings are
+local measurements, not a hardware-normalized benchmark.
+
+The medium stores 272 float64 conductances (2,176 bytes), compared with six
+linear-classifier parameters (48 bytes) or a two-value oracle (16 bytes).
+One supervised training condition uses 1,200 forward and 1,200 adjoint
+rollouts, 384,000 state steps, and 208,656 bytes of forward/adjoint trajectory
+arrays at peak, excluding gradient temporaries. Evaluation builds an exact
+two-motor response map for each frozen material; its work is reported separately.
+The medium is much more expensive than the classifier on this task.
+
+The aligned initial mapping was already 100% correct; the reversed initial
+mapping was 0%. Both become 100% after supervised learning. Thus material
+adaptation overcomes an initial geometric bias; this is not open-ended concept
+learning, a newly discovered local learning law or a complete brain.
+
+## Replay and reproducibility
+
+Open [the self-contained replay](../results/adaptive_medium/replay.html) locally.
+It uses seed 101 without best-seed selection. All activity frames are recorded
+rollouts; playback does not train. The static preview uses actual conductances
+and complete-window motor energies. Browser interaction/layout could not be
+smoke-tested: Playwright was present but its browser executable was absent.
+Embedded-data round-trip, escaping and JavaScript syntax checks passed.
+
+Raw measured results: [full receipt](../results/adaptive_medium/full.json).
+Per-case motor responses are retained for learned/frozen/erased/traffic arms.
+Shuffled controls retain exact per-permutation accuracy, invalid counts and
+motor-energy minimum/mean/maximum plus the deterministic permutation stream;
+individual shuffled cases can be regenerated from the locked code.
+
+To reproduce the original run, use a clean checkout of the lock commit:
+
+```bash
+git checkout 032974c6269d54ebe24c1c3ec0e12ffa07028ea6
+OPENBLAS_NUM_THREADS=1 python adaptive_medium_gate.py --mode full --protocol protocols/adaptive_medium.json --lock-commit 032974c6269d54ebe24c1c3ec0e12ffa07028ea6 --out results/adaptive_medium/reproduced.json --replay results/adaptive_medium/reproduced.html
+```
+
+On Windows, omit the environment-variable prefix or set it separately. Full
+mode rejects uncommitted tracked changes and a mismatched lock commit. An
+interrupted full run can resume with `--resume` only from a matching receipt
+and its exact code/protocol identity.

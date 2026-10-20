@@ -6,7 +6,7 @@ A small, inspectable experiment linking the 2024 SuperWeights question to the Oc
 
 **Status: exploratory CPU toy with one fixed teacher and one write order; not a demonstrated new AI architecture, a biological lipizone model, or a learned PAC code.** The results below are from a local run of the supplied deterministic code and can be regenerated. The gates were not preregistered before running.
 
-**Adaptive material subsystem:** [Protocol and measured development evidence](docs/adaptive_medium.md). Separate fast activity and persistent conductances learn two cue-to-output associations. Development on three seeds reaches 100% after activity reset, versus 50% frozen/erased/traffic-only and 100% for a cheaper linear classifier. The code and [visual replay](results/adaptive_medium/development-replay.html) are implemented; the held-out protocol is being locked before evaluation. [Approved design](docs/superpowers/specs/2026-10-20-adaptive-medium-design.md) · [implementation plan](docs/superpowers/plans/2026-10-20-adaptive-medium.md).
+**Adaptive material subsystem — held-out gate passed:** [Protocol and measured result](docs/adaptive_medium.md). Across 10 held-out seeds and both mappings, learned conductances give **4,000/4,000 correct decisions after activity reset**; frozen/erased/traffic-only material gives 50%, shuffled material 50.3%, and a cheaper six-parameter linear classifier 100%. [Recorded replay](results/adaptive_medium/replay.html) · [raw receipt](results/adaptive_medium/full.json) · [approved design](docs/superpowers/specs/2026-10-20-adaptive-medium-design.md). This demonstrates supervised material memory on a tiny fixed graph, not a complete brain or an AI performance advantage.
 
 ## Run
 
