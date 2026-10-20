@@ -1,0 +1,56 @@
+{
+  "version": "reward-material-v1",
+  "locked": true,
+  "config": {
+    "size": 9,
+    "dt": 0.1,
+    "leak": 0.02,
+    "mean": 0.08,
+    "lower": 0.005,
+    "upper": 0.4,
+    "steps": 160,
+    "pulse": 24,
+    "read_start": 113,
+    "width": 0.7,
+    "train_jitter": 0.25,
+    "eval_jitter": 0.35,
+    "train_noise": 0.05,
+    "eval_noise": 0.1,
+    "amplitude_min": 0.8,
+    "amplitude_max": 1.2,
+    "ratio_epsilon": 1e-09,
+    "energy_floor": 1e-08,
+    "target_magnitude": 0.8
+  },
+  "updates": 512,
+  "pairs": 8,
+  "sigma": 0.04,
+  "rate": 0.01,
+  "temperature": 5.0,
+  "teacher_updates": 600,
+  "per_cue": 100,
+  "shuffle_count": 20,
+  "development_seeds": [
+    211,
+    223,
+    241
+  ],
+  "heldout_seeds": [
+    301,
+    302,
+    303,
+    304,
+    305,
+    306,
+    307,
+    308,
+    309,
+    310
+  ],
+  "thresholds": {
+    "accuracy": 0.8,
+    "gain": 0.2,
+    "erasure_fraction": 0.5,
+    "refinement": 0.02
+  }
+}
