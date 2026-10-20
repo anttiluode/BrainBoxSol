@@ -129,3 +129,11 @@ PAC would require an added dynamical mechanism, an unambiguous phase assignment,
 Claude's separate project is testing **spectral/PAC addressing**. BrainBoxSol focuses on **local content writes, selective interference, and the fragility of geometry-derived addresses under real drift**.
 
 The next worthwhile experiment is *not* a larger network. It is a frozen prospective evaluation across fresh target patterns and write orders, matched effective writable degrees of freedom, and a replay-free local compensator under independent bridge perturbations. It must beat strong direct indexing or an equal-budget fast-weight/recurrent control on a problem where those methods are allowed to operate normally.
+
+## Closest established mechanisms (explicit prior art)
+
+- [Farajtabar et al. (2020), Orthogonal Gradient Descent](https://proceedings.mlr.press/v108/farajtabar20a.html): project future updates away from directions that change old outputs.
+- [Saha et al. (2021), Gradient Projection Memory](https://openreview.net/forum?id=3AOj0RCNC2): use an SVD-based protected subspace for continual learning.
+- [Lisman and Jensen (2013), The Theta-Gamma Neural Code](https://pmc.ncbi.nlm.nih.gov/articles/PMC3648857/): phase/subcycle organization of multiple items, motivating but not proving PAC as a robust spatial address.
+
+BrainBoxSol's limited implementation tests an established projection idea against a concrete local conductance response Jacobian. It does not establish novelty of the projection, nor a biological PAC mechanism.
