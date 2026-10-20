@@ -2,9 +2,10 @@
 
 Date: 2026-10-20 (Europe/Helsinki)
 
-Status: design for user review. No adaptive-medium implementation or results
-exist in this change. Conversational scope was approved by the instruction to
-continue in BrainBoxSol; the written specification is the next review point.
+Status: approved by the user on 2026-10-20 at 11:50 Europe/Helsinki.
+No adaptive-medium implementation or results exist in this change.
+The [implementation plan](../plans/2026-10-20-adaptive-medium.md) is ready for
+review and execution-method selection.
 
 ## Intended outcome
 
@@ -253,7 +254,7 @@ adding all of these ingredients at once.
 
 ## Review checkpoint
 
-User review of this written specification comes before an implementation plan.
-After approval, write the implementation plan and agree its execution method;
-then implement and publish the measured result in BrainBoxSol. No G4 result is
-claimed or implied by this design PR.
+The user approved this written specification. Review the linked implementation
+plan and select its execution method before implementation and publication of
+the measured result in BrainBoxSol. No G4 result is claimed or implied by this
+design and planning PR.
