@@ -1,4 +1,35 @@
-# BrainBoxSol — content writes inside a spectral address scaffold
+# BrainBoxSol — inspectable material-memory experiments
+
+Small CPU experiments in persistent conductances, transient responses, and history crossing between simulated media. The completed experiment stack is integrated into **main**; the sections below preserve the research record, including negative results.
+
+## Start here
+
+| Experiment | Locked held-out result | Read or view |
+|---|---|---|
+| Supervised adaptive material | **100%** on 4,000 decisions; erased/frozen 50% | [Report](docs/adaptive_medium.md) · [Replay](results/adaptive_medium/replay.html) |
+| One-bit reward writing | **75%**; **failed** the 80% gate | [Report](docs/reward_medium.md) · [Replay](results/reward_medium/replay.html) |
+| History through a matched temporal port | **99.92%** (1,279/1,280); fixed/erased 50%, shuffled 50.70% | [Visual report](results/history_waveform/report.html) · [Method](docs/history_waveform.md) |
+
+The temporal-port experiment uses offline waveform conditioning and a calibrated threshold. Raw charge alone also scored 100%; it does not show that every scalar readout is blind. These are controlled simulation mechanisms, not a complete brain or a demonstrated general AI advantage.
+
+## Install and check everything
+
+```sh
+python -m pip install -r requirements.txt
+python -m unittest discover -v
+```
+
+For quick, non-held-out checks:
+
+```sh
+python adaptive_medium_gate.py --mode smoke --out runs/smoke/adaptive.json
+python reward_gate.py --mode smoke --out runs/smoke/reward.json
+python waveform_gate.py --mode smoke --out runs/smoke/waveform.json
+```
+
+Choose output paths suitable for your machine. Full scientific runs require a clean checkout at their recorded lock commit; see each report. Merge commits preserve those exact source versions and all original receipts. [Earlier response-lens experiment](OUTER_LENS.md) · [Phase/bridge experiment](docs/phase_bridge_synthesis.md).
+
+## Original scaffold experiment and research record
 
 A small, inspectable experiment linking the 2024 SuperWeights question to the October 19, 2026 SihtiBrain return-path discussion.
 
