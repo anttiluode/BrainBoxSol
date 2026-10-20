@@ -1,0 +1,50 @@
+name: Bridge robustness
+on:
+  push:
+    branches: [sol/noise-aware-bridge]
+    paths:
+      - bridge_robustness.py
+      - test_bridge_robustness.py
+      - protocols/bridge_robustness.json
+      - protocols/bridge_robustness_run.json
+      - .github/workflows/bridge-robustness.yml
+  pull_request:
+    paths:
+      - bridge_robustness.py
+      - test_bridge_robustness.py
+      - protocols/bridge_robustness.json
+      - .github/workflows/bridge-robustness.yml
+permissions:
+  contents: read
+jobs:
+  verify-and-evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OPENBLAS_NUM_THREADS: 1
+      OMP_NUM_THREADS: 1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - name: Full repository tests
+        run: python -m unittest discover -v
+      - name: Development or locked evaluation
+        run: |
+          if [ -f protocols/bridge_robustness_run.json ]; then
+            BB_LOCK=$(python -c 'import json; print(json.load(open("protocols/bridge_robustness_run.json"))["lock_commit"])')
+            git checkout "$BB_LOCK"
+            python bridge_robustness.py --mode full --lock-commit "$BB_LOCK" --out results/bridge_robustness/full.json
+          else
+            python bridge_robustness.py --mode development --out results/bridge_robustness/development.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bridge-robustness-receipts
+          path: results/bridge_robustness/
+          retention-days: 90
