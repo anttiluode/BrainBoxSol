@@ -94,6 +94,35 @@ def write_one(box, state, block, target, baseline, mode='local', rate=.15):
     state[writable] = np.clip(state[writable], .1, 2.)
 
 
+def write_protected(box, state, block, target, baseline, protected_blocks, rate=.15):
+    """Protect old measured readouts by an adjoint-Jacobian nullspace projection.
+
+    OGD/GPM-style prior-art method applied to the physical edge sensitivities.
+    Old query ports must be available again; each adds another read/sensitivity
+    evaluation. This is *not* autonomous local learning or free addressing.
+    """
+    response, sensitivity = box.read(state, block)
+    residual = (response - target[block]) / baseline[block]
+    writable = box.owner >= 0
+    candidate = sensitivity[writable] / baseline[block]
+
+    if protected_blocks:
+        old_rows = np.stack([
+            box.read(state, old)[1][writable] / baseline[old]
+            for old in protected_blocks
+        ])
+        _, singular, right = np.linalg.svd(old_rows, full_matrices=False)
+        # Remove directions to which old readouts respond to first order.
+        active = singular > singular[0] * 1e-7
+        if np.any(active):
+            candidate = candidate - right[active].T @ (right[active] @ candidate)
+
+    magnitude = float(candidate @ candidate)
+    if magnitude > 1e-12:
+        state[writable] -= rate * residual * candidate / magnitude
+        state[writable] = np.clip(state[writable], .1, 2.)
+
+
 def sequential_training(box, target, baseline, mode, steps=80):
     state = box.initial.copy()
     histories = []
