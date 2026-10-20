@@ -1,0 +1,6 @@
+{
+  "lock_commit": "7cb745c7d0b197742616401a5d1838d13f19854e",
+  "mode": "full",
+  "protocol_schema": 2,
+  "reason": "All 63 tests and independent review passed before the ten fresh device seeds."
+}

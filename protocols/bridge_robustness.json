@@ -1,0 +1,82 @@
+{
+  "schema_version": 2,
+  "experiment": "bridge_robustness",
+  "locked": true,
+  "question": "Does noise-aware supervised writing complement interface-total repair on unseen bridge drift?",
+  "source_medium": "phase_bridge_gate.PhaseMedium",
+  "blocks": 6,
+  "training": {
+    "steps": 48,
+    "worlds": 8,
+    "noise_sd": 0.2,
+    "family": "mixed",
+    "rate": 0.5,
+    "max_step": 0.1,
+    "ridge": 0.0001,
+    "conductance_bounds": [
+      0.1,
+      2
+    ]
+  },
+  "evaluation": {
+    "strengths": [
+      0.2,
+      0.6
+    ],
+    "families": [
+      "independent",
+      "coherent",
+      "alternating",
+      "interior"
+    ],
+    "draws": 12,
+    "primary_family": "independent",
+    "primary_strength": 0.6
+  },
+  "seeds": {
+    "smoke": [
+      31
+    ],
+    "development": [
+      1011,
+      1017,
+      1023
+    ],
+    "full": [
+      7001,
+      7002,
+      7003,
+      7004,
+      7005,
+      7006,
+      7007,
+      7008,
+      7009,
+      7010
+    ]
+  },
+  "claims": {
+    "min_relative_error_reduction": 0.1,
+    "min_positive_device_fraction": 0.8,
+    "max_clean_error_penalty": 0.002,
+    "relative_error_floor": 1e-8
+  },
+  "notes": [
+    "All primary arms use the same simultaneous supervised Gauss-Newton writer and equal response/Jacobian budgets; this is not the earlier sequential OGD/GPM comparison.",
+    "Only interior conductances are writable. Teacher targets and clean baselines are explicit.",
+    "Noise-aware writing uses eight fixed mixed-noise bridge worlds. Clean writing repeats the clean world eight times, with actual repeated computations.",
+    "Four arms: standard, noise-aware, standard plus interface repair, noise-aware plus interface repair.",
+    "Fresh evaluation noises use separate deterministic RNG streams. Interior drift is a diagnostic outside bridge repair's intended scope.",
+    "Primary claims compare noise-aware vs standard, and combined vs standard plus repair, under independent bridge drift sd=0.6. Both require >=10% relative error reduction, gain in >=80% of device means, and <=0.002 absolute clean normalized error penalty.",
+    "Separate normalized target error from deviation of a trained response after drift. Report clean fit and frozen reference; do not conflate stable wrong answers with retained task performance.",
+    "Devices, not ports or drift draws, are the replication units. Report paired per-device differences and a deterministic percentile bootstrap interval.",
+    "A failed claim is a scientific result; never tune full-seed outcomes."
+  ],
+  "amendment": {
+    "date": "2026-10-20",
+    "prior_protocol_commit": "e4c4f95a2462b7f31f9f18a7fc720a41428c5a92",
+    "development_source_commit": "0f1033a525e361cbecdf942b73bfeed134edb031",
+    "reason": "Development showed coherent interface scaling is exactly reversed by interface-total repair. Independent drift is the nontrivial primary test. V1 source, protocol and development receipt remain archived. No full seeds evaluated.",
+    "relative_effect_floor": "Relative reductions below 1e-8 control error are unresolvable, represented as null, and cannot pass the relative-effect criterion."
+  }
+}
