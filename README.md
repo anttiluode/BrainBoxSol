@@ -6,6 +6,8 @@ A small, inspectable experiment linking the 2024 SuperWeights question to the Oc
 
 **Status: exploratory CPU toy with one fixed teacher and one write order; not a demonstrated new AI architecture, a biological lipizone model, or a learned PAC code.** The results below are from a local run of the supplied deterministic code and can be regenerated. The gates were not preregistered before running.
 
+**Adaptive material subsystem — held-out gate passed:** [Protocol and measured result](docs/adaptive_medium.md). Across 10 held-out seeds and both mappings, learned conductances give **4,000/4,000 correct decisions after activity reset**; frozen/erased/traffic-only material gives 50%, shuffled material 50.3%, and a cheaper six-parameter linear classifier 100%. [Recorded replay](results/adaptive_medium/replay.html) · [raw receipt](results/adaptive_medium/full.json) · [approved design](docs/superpowers/specs/2026-10-20-adaptive-medium-design.md). This demonstrates supervised material memory on a tiny fixed graph, not a complete brain or an AI performance advantage.
+
 ## Run
 
 Requires Python 3.10+ and NumPy.
@@ -157,3 +159,9 @@ The next worthwhile experiment is *not* a larger network. It is a frozen prospec
 - [Lisman and Jensen (2013), The Theta-Gamma Neural Code](https://pmc.ncbi.nlm.nih.gov/articles/PMC3648857/): phase/subcycle organization of multiple items, motivating but not proving PAC as a robust spatial address.
 
 BrainBoxSol's limited implementation tests an established projection idea against a concrete local conductance response Jacobian. It does not establish novelty of the projection, nor a biological PAC mechanism.
+
+### Reward-only conductance writing
+
+The next bounded experiment replaces the explicit teacher gradient with one-bit action rewards. See [method, controls, and limitations](docs/reward_medium.md) and the [locked protocol](protocols/reward_medium.json). This tests learning in a small physical medium; it does not establish a brain.
+
+Locked reward result: **75% held-out accuracy** across ten fresh seeds, versus 50% frozen/erased/random updates, 48.9% shuffled reward, and 96.25% teacher. The 80% gate **failed**; erasure removed the learned gain. See the [complete report](docs/reward_medium.md), [receipt](results/reward_medium/full.json), [result chart](results/reward_medium/results.png), and [recorded replay](results/reward_medium/replay.html).
