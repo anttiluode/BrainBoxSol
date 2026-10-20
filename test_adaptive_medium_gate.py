@@ -66,6 +66,43 @@ class TrainingTests(unittest.TestCase):
 
 
 class GateTests(unittest.TestCase):
+    def test_resume_cli_stops_corrupted_checkpoint_before_training(self):
+        from adaptive_medium_gate import main,evaluate_seed
+        from unittest.mock import patch
+        import hashlib
+        cfg=TaskConfig(); row=evaluate_seed(11,cfg,updates=1,per_cue=3,shuffle_count=2)
+        row['seed']=101;row['mappings'][0]['learned_material']=[-.1]*272
+        protocol=Path('protocols/adaptive_medium.json').resolve()
+        with tempfile.TemporaryDirectory() as d:
+            out=Path(d)/'partial.json'
+            out.write_text(json.dumps({'protocol_sha256':hashlib.sha256(protocol.read_bytes()).hexdigest(),
+                'code_commit':'fixture-commit','mode':'full','seed_results':[row]}))
+            # Only external Git provenance and forbidden new training are replaced;
+            # checkpoint parsing and metric/material validation execute for real.
+            with patch('adaptive_medium_gate.verify_lock'),patch('adaptive_medium_gate.git_output',
+                    side_effect=lambda *a,**kw:'fixture-commit' if a[0]=='rev-parse' else ''),\
+                    patch('adaptive_medium_gate.evaluate_seed',side_effect=AssertionError('corrupt checkpoint reached new training')):
+                self.assertEqual(main(['--mode','full','--resume','--protocol',str(protocol),
+                    '--lock-commit','fixture-commit','--out',str(out)]),2)
+
+    def test_resume_revalidates_material_and_measured_records(self):
+        from adaptive_medium_gate import evaluate_seed, validate_resumed_seed
+        cfg=TaskConfig(); good=evaluate_seed(11,cfg,updates=2,per_cue=3,shuffle_count=2)
+        original=json.dumps(good,sort_keys=True)
+        validate_resumed_seed(good,cfg,updates=2,per_cue=3,shuffle_count=2)
+        self.assertEqual(json.dumps(good,sort_keys=True),original)
+        edits=[lambda r:r['mappings'][0].update(learned_material=[-.1]*272),
+            lambda r:r['mappings'].pop(),
+            lambda r:r['mappings'][0]['arms'].pop('erased'),
+            lambda r:r['mappings'][0]['arms']['learned'].update(accuracy=0.),
+            lambda r:r['mappings'][0]['arms']['learned'].update(count=1),
+            lambda r:r['mappings'][0]['arms']['shuffled']['permutation_results'].pop(),
+            lambda r:r['numerical'].update(passed=False)]
+        for edit in edits:
+            bad=json.loads(original);edit(bad)
+            with self.subTest(edit=edit),self.assertRaises(ValueError):
+                validate_resumed_seed(bad,cfg,updates=2,per_cue=3,shuffle_count=2)
+
     def test_protocol_cannot_silently_change_unused_constants_or_seed_split(self):
         from adaptive_medium_gate import main
         base=json.loads(Path('protocols/adaptive_medium.json').read_text())
@@ -144,6 +181,10 @@ class ReplayTests(unittest.TestCase):
             self.assertIn('<noscript>',text); self.assertIn('<table',text)
             bad=[{**episodes[0],'states':[]}]
             with self.assertRaises(ValueError): write_replay(p,grid=grid,receipt=receipt,episodes=bad)
+            missing_energy=[{k:v for k,v in ep.items() if k!='energies'} for ep in episodes]
+            with self.assertRaises(ValueError): write_replay(p,grid=grid,receipt=receipt,episodes=missing_energy)
+            with self.assertRaises(ValueError): write_replay(p,grid=grid,receipt=receipt,episodes=episodes[:-1])
+            self.assertNotIn('<option value="0,1">',text)  # absent mapping is not offered
 
 
 if __name__=='__main__': unittest.main()

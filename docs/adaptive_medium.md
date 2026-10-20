@@ -142,3 +142,18 @@ On Windows, omit the environment-variable prefix or set it separately. Full
 mode rejects uncommitted tracked changes and a mismatched lock commit. An
 interrupted full run can resume with `--resume` only from a matching receipt
 and its exact code/protocol identity.
+
+## Independent review and post-lock hardening
+
+A fresh reviewer independently ran the 31 original tests and regenerated all
+stored learned/frozen/traffic material responses across the ten seeds, the
+summary/protocol digest and all replay episodes. Two Important validation
+defects were found and fixed: resume now validates materials and regenerates
+all decision evidence before accepting completed seeds; replay generation
+validates every browser-consumed episode field and selector coverage.
+
+The resume CLI regression fails against the original locked code; all 33 tests
+pass after both fixes. The replay HTML wrapper was regenerated, while the
+original `full.json` and its producing lock commit remain unchanged. Neither
+fix changes fresh-run learning, task physics or the frozen measured result.
+See [review record](adaptive_medium_review.md) for scope and limitations.

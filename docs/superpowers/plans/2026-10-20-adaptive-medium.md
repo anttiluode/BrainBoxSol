@@ -180,13 +180,13 @@ Reject checkpoint wrong grid size, malformed JSON, NaN and incorrect budget. Ver
 
 **Consumes:** All preceding tasks and numerical checks. No new acting or learning interfaces.
 
-- [ ] **Step 1: Add the adaptive unittest modules and a smoke command to CI.** Smoke uses development seed 11, both mappings, 5 updates, 3 examples per cue and 2 permutations; its receipts explicitly say non-held-out and cannot satisfy the full gate. Preserve the existing G0-G3 steps. Upload new nested JSON/HTML artifacts as well as existing receipts.
-- [ ] **Step 2: Run `PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 python -m unittest discover -v` and the smoke command.** Require all tests to pass and a complete finite smoke receipt; do not require the research gate to pass at 5 updates.
-- [ ] **Step 3: Commit the complete protocol lock before any held-out training.** Include all implementation/evaluation/replay code, CI, exact constants and `locked: true`. Message: `experiment: lock adaptive-medium held-out protocol`. Record the resulting SHA for the next command.
-- [ ] **Step 4: Run `OPENBLAS_NUM_THREADS=1 python adaptive_medium_gate.py --mode full --protocol protocols/adaptive_medium.json --lock-commit <lock-SHA> --out results/adaptive_medium/full.json --replay results/adaptive_medium/replay.html`.** Use seeds 101..110, both mappings, 100 examples per cue and 20 permutations. Keep progress messages at least once per seed/mapping. Do not tune or rerun selected seeds to improve the result. Resume only by reusing completed receipts with matching lock SHA and protocol digest, preserving failures.
-- [ ] **Step 5: Write the measured report and README status.** Include every arm/seed, mean/std/range, raw energy failures, all verdict conjuncts, development changes, actual compute/storage and the limitations from the spec. Report failure without spin if any conjunct fails. Distinguish green software checks from the scientific gate outcome.
-- [ ] **Step 6: Rerun the full unittest suite and inspect the replay and receipt.** A JSON round-trip must preserve metrics; stored/reloaded material must reproduce the fixed episode. Include the implementation's selected review method, address concrete review findings, then publish the result on the BrainBoxSol branch as a reviewable PR update. Do not merge earlier PRs or touch another repository.
-- [ ] **Step 7: Commit the receipts, replay and final report.** Message: `experiment: report locked adaptive-material memory result`. Link the PR, run command, measured outcome and visual replay in the final response.
+- [x] **Step 1: Add the adaptive unittest modules and a smoke command to CI.** Smoke uses development seed 11, both mappings, 5 updates, 3 examples per cue and 2 permutations; its receipts explicitly say non-held-out and cannot satisfy the full gate. Preserve the existing G0-G3 steps. Upload new nested JSON/HTML artifacts as well as existing receipts.
+- [x] **Step 2: Run `PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 python -m unittest discover -v` and the smoke command.** Require all tests to pass and a complete finite smoke receipt; do not require the research gate to pass at 5 updates.
+- [x] **Step 3: Commit the complete protocol lock before any held-out training.** Include all implementation/evaluation/replay code, CI, exact constants and `locked: true`. Message: `experiment: lock adaptive-medium held-out protocol`. Record the resulting SHA for the next command.
+- [x] **Step 4: Run `OPENBLAS_NUM_THREADS=1 python adaptive_medium_gate.py --mode full --protocol protocols/adaptive_medium.json --lock-commit <lock-SHA> --out results/adaptive_medium/full.json --replay results/adaptive_medium/replay.html`.** Use seeds 101..110, both mappings, 100 examples per cue and 20 permutations. Keep progress messages at least once per seed/mapping. Do not tune or rerun selected seeds to improve the result. Resume only by reusing completed receipts with matching lock SHA and protocol digest, preserving failures.
+- [x] **Step 5: Write the measured report and README status.** Include every arm/seed, mean/std/range, raw energy failures, all verdict conjuncts, development changes, actual compute/storage and the limitations from the spec. Report failure without spin if any conjunct fails. Distinguish green software checks from the scientific gate outcome.
+- [x] **Step 6: Rerun the full unittest suite and inspect the replay and receipt.** A JSON round-trip must preserve metrics; stored/reloaded material must reproduce the fixed episode. Include the implementation's selected review method, address concrete review findings, then publish the result on the BrainBoxSol branch as a reviewable PR update. Do not merge earlier PRs or touch another repository.
+- [x] **Step 7: Commit the receipts, replay and final report.** Message: `experiment: report locked adaptive-material memory result`. Link the PR, run command, measured outcome and visual replay in the final response.
 
 ## Plan self-review and handoff
 
@@ -198,9 +198,8 @@ measurements and honest publication. All five Review Focus entries have owning
 tests. The saved-material reset and the full-rollout/response-map equivalence
 checks prevent two especially plausible false positives.
 
-Execution method approved: **Native**. Tasks 1-5 are complete; development measurements are documented in `docs/adaptive_medium.md`. These
+Execution method approved: **Native**. Tasks 1-6 are complete; development and held-out measurements are documented in `docs/adaptive_medium.md`. These
 six tasks share a small set of tightly coupled numerical interfaces; one
 implementer can preserve the definitions and check the whole branch with a
 fresh reviewer at the end. The alternative is subagent-driven implementation
-with a fresh implementer/reviewer for each task. User plan review and execution
-method selection precede either approach.
+with a fresh implementer/reviewer for each task. Native execution and one independent whole-branch review were completed. The review fixes and remaining limitations are recorded in `docs/adaptive_medium_review.md`.

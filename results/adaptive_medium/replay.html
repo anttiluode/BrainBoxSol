@@ -38,9 +38,9 @@ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}td,t
 'use strict';
 const D=JSON.parse(document.getElementById('data').textContent), $=id=>document.getElementById(id);
 let frame=0,playing=false,last=0; const maxU=Math.max(...D.episodes.map(e=>Math.max(...e.states.flat())));
-function episode(){return D.episodes.find(e=>e.mapping.join(',')===$('mapping').value&&e.cue===+$('cue').value&&e.arm===$('arm').value)||D.episodes[0]}
+function episode(){return D.episodes.find(e=>e.mapping.join(',')===$('mapping').value&&e.cue===+$('cue').value&&e.arm===$('arm').value)}
 function point(i){return [50+(i%D.size)*50,50+Math.floor(i/D.size)*50]}
-function draw(){const e=episode();frame=Math.min(frame,e.states.length-1);$('time').max=e.states.length-1;$('time').value=frame;$('clock').textContent='t = '+e.times[frame].toFixed(1);
+function draw(){const e=episode();if(!e){$('status').textContent='No recorded episode for this selection.';return;}frame=Math.min(frame,e.states.length-1);$('time').max=e.states.length-1;$('time').value=frame;$('clock').textContent='t = '+e.times[frame].toFixed(1);
 for(const kind of ['structure','activity']){const c=$(kind).getContext('2d');c.clearRect(0,0,500,500);
 D.edges.forEach(([a,b],i)=>{const g=e.material[i],[x,y]=point(a),[xx,yy]=point(b);c.beginPath();c.moveTo(x,y);c.lineTo(xx,yy);c.lineWidth=kind==='structure'?.4+7*g:1;
 c.strokeStyle=kind==='structure'?(g>=.16?'rgba(123,219,192,.85)':'rgba(114,140,170,.15)'):'rgba(80,101,130,.20)';c.stroke()});
@@ -52,6 +52,6 @@ const correct=e.action===e.target_motor&&e.valid;$('status').textContent=`Seed $
 }
 for(const id of ['mapping','cue','arm'])$(id).addEventListener('change',()=>{frame=0;draw()});
 $('time').addEventListener('input',()=>{frame=+$('time').value;draw()});$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'Pause':'Play'};
-function animate(t){if(playing&&t-last>100){frame=(frame+1)%episode().states.length;draw();last=t}requestAnimationFrame(animate)}
+function animate(t){const e=episode();if(playing&&e&&t-last>100){frame=(frame+1)%e.states.length;draw();last=t}requestAnimationFrame(animate)}
 draw();requestAnimationFrame(animate);
 </script></html>

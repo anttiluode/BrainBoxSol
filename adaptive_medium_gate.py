@@ -259,6 +259,65 @@ def numerical_diagnostics(cfg):
         'passed':bool(max(errors)<1e-7 and map_error<1e-12)}
 
 
+def validate_resumed_seed(record,cfg,*,updates,per_cue,shuffle_count):
+    """Revalidate checkpoint material and regenerate all decision evidence, without retraining."""
+    def match(actual,expected):
+        if isinstance(expected,dict):
+            for key,value in expected.items(): match(actual[key],value)
+        elif isinstance(expected,(list,tuple)):
+            if not np.allclose(np.asarray(actual),np.asarray(expected),rtol=1e-10,atol=1e-12):
+                raise ValueError('resumed measured array differs from regenerated evidence')
+        elif isinstance(expected,(int,float)):
+            if not np.isfinite(actual) or not np.isclose(actual,expected,rtol=1e-10,atol=1e-12):
+                raise ValueError('resumed scalar metric differs from regenerated evidence')
+        elif actual!=expected:
+            raise ValueError('resumed metadata differs from expected protocol')
+    try:
+        json.dumps(record,allow_nan=False)
+        seed=record['seed']; grid=make_grid(cfg.size)
+        if not isinstance(seed,int) or seed<0 or [m['mapping'] for m in record['mappings']]!=[[0,1],[1,0]]:
+            raise ValueError('resumed seed or mappings are invalid')
+        sources,cues=make_evaluation_sources(seed,cfg,per_cue)
+        expected_initial=initial_material(grid,seed,mean=cfg.mean,lower=cfg.lower,upper=cfg.upper)
+        refinements=[]
+        for m in record['mappings']:
+            if set(m['arms'])!={'learned','frozen','erased','shuffled','activity_only','linear','lookup'}:
+                raise ValueError('resumed control arms are incomplete')
+            initial=validate_material(m['initial_material'],grid,cfg)
+            learned=validate_material(m['learned_material'],grid,cfg)
+            traffic=validate_material(m['traffic_material'],grid,cfg)
+            if not np.array_equal(initial,expected_initial): raise ValueError('resumed initial material mismatch')
+            targets=np.asarray(m['mapping'])[cues]
+            for name,g in (('learned',learned),('frozen',initial),('erased',initial),('activity_only',traffic)):
+                match(m['arms'][name],score_episodes(evaluate_material(grid,g,sources,cfg),targets))
+            shuffles=interventions(MaterialRun(initial,learned,[],{}),seed,shuffle_count)['shuffled']
+            saved=m['arms']['shuffled']; pieces=saved['permutation_results']
+            if len(pieces)!=shuffle_count: raise ValueError('resumed shuffle count mismatch')
+            for actual,g in zip(pieces,shuffles):
+                expected=score_episodes(evaluate_material(grid,g,sources,cfg),targets)
+                expected.pop('scores');expected.pop('energies');match(actual,expected)
+            match(saved,{'accuracy':float(np.mean([s['accuracy'] for s in pieces])),
+                'invalid':sum(s['invalid'] for s in pieces),'count':sum(s['count'] for s in pieces),
+                'minimum_energy':min(s['minimum_energy'] for s in pieces)})
+            w=np.asarray(m['linear_parameters']['weights']); bias=np.asarray(m['linear_parameters']['biases'])
+            if w.shape!=(2,2) or bias.shape!=(2,) or not np.isfinite(w).all() or not np.isfinite(bias).all():
+                raise ValueError('resumed classifier parameters invalid')
+            logits=sensory_features(sources,cfg)@w.T+bias
+            ties=logits[:,0]==logits[:,1]
+            match(m['arms']['linear'],{'accuracy':float(np.mean((logits.argmax(axis=1)==targets)&~ties)),
+                'invalid':0,'count':len(targets),'ties':int(ties.sum())})
+            match(m['arms']['lookup'],{'accuracy':1.,'invalid':0,'count':len(targets),'oracle_cue_identity':True})
+            match(m['training_costs'],{'forward_rollouts':2*updates,'adjoint_rollouts':2*updates})
+            match(m['traffic_costs'],{'forward_rollouts':2*updates,'adjoint_rollouts':0})
+            checks=[refinement_check(grid,g,sources[[0,per_cue]],cfg) for g in (initial,learned)]
+            if len(m['refinement'])!=2: raise ValueError('resumed refinement record incomplete')
+            for actual,expected in zip(m['refinement'],checks): match(actual,expected)
+            refinements.extend(checks)
+        match(record['numerical'],{'passed':all(x['passed'] for x in refinements)})
+    except (KeyError,TypeError,IndexError,OverflowError) as exc:
+        raise ValueError('malformed resumed seed record') from exc
+
+
 def write_json(path,data):
     path=Path(path); path.parent.mkdir(parents=True,exist_ok=True)
     text=json.dumps(data,indent=2,allow_nan=False)+'\n'
@@ -304,6 +363,8 @@ def main(argv=None):
                 if old[key]!=receipt[key]: raise ValueError('resume provenance mismatch')
             done=[x['seed'] for x in old['seed_results']]
             if done!=seeds[:len(done)]: raise ValueError('resume seed prefix mismatch')
+            for row in old['seed_results']:
+                validate_resumed_seed(row,cfg,updates=updates,per_cue=per_cue,shuffle_count=shuffles)
             receipt['seed_results']=old['seed_results']
         start=time.perf_counter()
         for seed in seeds[len(receipt['seed_results']):]:

@@ -254,7 +254,6 @@ adding all of these ingredients at once.
 
 ## Review checkpoint
 
-The user approved this written specification. Review the linked implementation
-plan and select its execution method before implementation and publication of
-the measured result in BrainBoxSol. No G4 result is claimed or implied by this
-design and planning PR.
+The user approved this specification and Native execution of the linked plan.
+The implementation, locked evaluation and independent review are complete; see
+the experiment report for the measured result and its explicit limits.

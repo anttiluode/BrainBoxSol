@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import numpy as np
 from adaptive_medium import make_grid, rollout
-from adaptive_medium_task import TaskConfig, make_drive, read_motor
+from adaptive_medium_task import TaskConfig, make_drive, read_motor, episode_from_energies
 from adaptive_medium_gate import make_evaluation_sources
 
 
@@ -29,6 +29,7 @@ def replay_episodes(receipt):
 
 def write_replay(path,*,grid,receipt,episodes):
     if not episodes: raise ValueError('replay requires measured episodes')
+    cfg=TaskConfig(**receipt['config']); combinations=set(); mappings=set()
     for ep in episodes:
         try:
             states=np.asarray(ep['states'],dtype=float); times=np.asarray(ep['times'],dtype=float)
@@ -36,17 +37,36 @@ def write_replay(path,*,grid,receipt,episodes):
             if (states.ndim!=2 or states.shape[1]!=grid.nodes or len(states)<2 or len(times)!=len(states)
                     or not np.isfinite(states).all() or not np.isfinite(times).all()
                     or np.any(np.diff(times)<=0) or times[0]!=0
+                    or not np.isclose(times[-1],cfg.steps*cfg.dt)
                     or material.shape!=(len(grid.edges),) or not np.isfinite(material).all()):
                 raise ValueError('inconsistent replay arrays')
+            make_drive(ep['source'],cfg)
+            measured=episode_from_energies(ep['energies'],cfg)
+            if (ep['cue'] not in (0,1) or ep['arm'] not in ('Before','Learned','Frozen','Erased')
+                    or ep['mapping'] not in ([0,1],[1,0]) or not isinstance(ep['seed'],int)
+                    or ep['target_motor']!=ep['mapping'][ep['cue']]
+                    or ep['action']!=measured.action or ep['valid']!=measured.valid
+                    or not np.isfinite(ep['score']) or not np.isclose(ep['score'],measured.score)
+                    or np.any(states<0) or np.any(states[0]!=0)
+                    or material.min()<cfg.lower-1e-12 or material.max()>cfg.upper+1e-12
+                    or abs(material.sum()-len(material)*cfg.mean)>1e-10*len(material)*cfg.mean):
+                raise ValueError('inconsistent replay metadata or material')
+            key=(tuple(ep['mapping']),ep['cue'],ep['arm'])
+            if key in combinations: raise ValueError('duplicate replay condition')
+            combinations.add(key);mappings.add(tuple(ep['mapping']))
         except (KeyError,TypeError) as exc:
             raise ValueError('missing replay arrays') from exc
-    cfg=TaskConfig(**receipt['config'])
+    expected={(m,c,a) for m in mappings for c in (0,1) for a in ('Before','Learned','Frozen','Erased')}
+    if combinations!=expected: raise ValueError('missing selectable replay condition')
     payload={'episodes':episodes,'size':grid.size,'edges':grid.edges.tolist(),
         'config':asdict(cfg),'commit':receipt['code_commit'],'mode':receipt['mode']}
     encoded=json.dumps(payload,separators=(',',':'),allow_nan=False).replace('<','\\u003c')
     rows=''.join(f'<tr><td>{html.escape(k)}</td><td>{v["mean"]:.3f}</td></tr>'
                  for k,v in receipt['summary']['arms'].items())
     page=TEMPLATE.replace('__DATA__',encoded).replace('__ROWS__',rows)
+    options=''.join(f'<option value="{m[0]},{m[1]}">A → {"upper" if m[0]==0 else "lower"} · B → {"upper" if m[1]==0 else "lower"}</option>'
+                    for m in sorted(mappings,reverse=True))
+    page=page.replace('__MAP_OPTIONS__',options)
     page=page.replace('__MODE__',html.escape(receipt['mode'])).replace('__COMMIT__',html.escape(receipt['code_commit']))
     path=Path(path); path.parent.mkdir(parents=True,exist_ok=True); path.write_text(page,encoding='utf-8')
 
@@ -71,7 +91,7 @@ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}td,t
 <h1>Experience changes the medium.</h1>
 <p>Signals fade. The connections they helped train remain. This replay shows actual recorded activity in an 81-node medium, before and after supervised learning.</p>
 <span class="badge">__MODE__ · recorded simulation · no browser training</span>
-<div class="panel controls"><label>Association <select id="mapping"><option value="1,0">A → lower · B → upper</option><option value="0,1">A → upper · B → lower</option></select></label>
+<div class="panel controls"><label>Association <select id="mapping">__MAP_OPTIONS__</select></label>
 <label>Cue <select id="cue"><option value="0">A</option><option value="1">B</option></select></label>
 <label>Material <select id="arm"><option>Learned</option><option>Before</option><option>Frozen</option><option>Erased</option></select></label>
 <button id="play">Play</button><input id="time" aria-label="Simulation time" type="range" min="0" max="40" value="0"><span id="clock">0.0</span></div>
@@ -91,9 +111,9 @@ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}td,t
 'use strict';
 const D=JSON.parse(document.getElementById('data').textContent), $=id=>document.getElementById(id);
 let frame=0,playing=false,last=0; const maxU=Math.max(...D.episodes.map(e=>Math.max(...e.states.flat())));
-function episode(){return D.episodes.find(e=>e.mapping.join(',')===$('mapping').value&&e.cue===+$('cue').value&&e.arm===$('arm').value)||D.episodes[0]}
+function episode(){return D.episodes.find(e=>e.mapping.join(',')===$('mapping').value&&e.cue===+$('cue').value&&e.arm===$('arm').value)}
 function point(i){return [50+(i%D.size)*50,50+Math.floor(i/D.size)*50]}
-function draw(){const e=episode();frame=Math.min(frame,e.states.length-1);$('time').max=e.states.length-1;$('time').value=frame;$('clock').textContent='t = '+e.times[frame].toFixed(1);
+function draw(){const e=episode();if(!e){$('status').textContent='No recorded episode for this selection.';return;}frame=Math.min(frame,e.states.length-1);$('time').max=e.states.length-1;$('time').value=frame;$('clock').textContent='t = '+e.times[frame].toFixed(1);
 for(const kind of ['structure','activity']){const c=$(kind).getContext('2d');c.clearRect(0,0,500,500);
 D.edges.forEach(([a,b],i)=>{const g=e.material[i],[x,y]=point(a),[xx,yy]=point(b);c.beginPath();c.moveTo(x,y);c.lineTo(xx,yy);c.lineWidth=kind==='structure'?.4+7*g:1;
 c.strokeStyle=kind==='structure'?(g>=.16?'rgba(123,219,192,.85)':'rgba(114,140,170,.15)'):'rgba(80,101,130,.20)';c.stroke()});
@@ -105,6 +125,6 @@ const correct=e.action===e.target_motor&&e.valid;$('status').textContent=`Seed $
 }
 for(const id of ['mapping','cue','arm'])$(id).addEventListener('change',()=>{frame=0;draw()});
 $('time').addEventListener('input',()=>{frame=+$('time').value;draw()});$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'Pause':'Play'};
-function animate(t){if(playing&&t-last>100){frame=(frame+1)%episode().states.length;draw();last=t}requestAnimationFrame(animate)}
+function animate(t){const e=episode();if(playing&&e&&t-last>100){frame=(frame+1)%e.states.length;draw();last=t}requestAnimationFrame(animate)}
 draw();requestAnimationFrame(animate);
 </script></html>'''
