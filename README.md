@@ -118,6 +118,18 @@ Run: `python phase_bridge_gate.py` and `python -m unittest -v test_phase_bridge_
 
 Take the protected writer into a task with more potential experiences than explicit readout slots. Freeze hyperparameters, constrain the old-query replay budget, add context-gated readouts and physically perturbed bridges, and compare with capacity-/compute-matched conventional gradient projection, recurrent memory and direct indexed memory. A geometry-mediated benefit must survive those controls.
 
+## G3 — Outer response lens: the hidden material speaks through time
+
+**[Full protocol, step-response diagram, result table and limitations](OUTER_LENS.md)**
+
+A material box can have two distinct internal conductance arrangements with **identical static DC response and identical immediate response**, but different transient behavior. Two parallel hidden capacitive paths encode externally imposed A/B histories; a parent reader observes only boundary input/output pairs.
+
+A three- or five-coefficient classical ARX reader learns the externally visible dynamics and predicts new temporal drives. A matched-size FIR reader and one-scalar block mean/DC model fail to predict the long transients. The two-pole reader fits exact data but becomes ill-conditioned when training measurements are noisy. Across five probe seeds and three heldout drive families, the *noisy* B-case test RMSE is roughly 0.01075 for ARX-2 versus 0.22717 for FIR-5 and 0.46525 for static DC.
+
+**Scope:** this tests *how to describe the inside from outside*, not a learned writing rule, a new numerical method, PAC, PhiWorld intelligence or a better AI. It is complementary to Claude's G6 continual-learning branch.
+
+Reproduce: `python -m unittest -v test_outer_lens && python sweep_outer_lens.py`.
+
 ## What about PAC as an address?
 
 Phase–amplitude coupling (PAC) could provide a *time-selective read gate* across hierarchical regions: a slow phase might determine which region's fast activity is read in each temporal window. But the present medium is passive, with **real exponential decays, not oscillations**. A slow Laplacian eigenmode is not automatically a phase oscillator.
