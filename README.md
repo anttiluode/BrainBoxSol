@@ -75,6 +75,41 @@ supervised replay: +0.0001  -0.1165  -0.0002  -0.1037
 
 **The proposed homeostatic preservation gate fails in this toy.** Strongly constrained local material updates cannot reliably compensate for drift in the shared address bridges. An exact boundary-preserving coordinate transform would be a trivial different control; this is genuine function-changing drift.
 
+## G1 — a 384-case correction and a protected-write control
+
+**The fixed G0 example was misleading as a general comparison.** We expanded the study *after seeing G0* to all 16 binary teacher patterns (±40% within each block) × all 24 permutations of the four write tasks: **384 deterministic cases**, with the same bridge topology, learning rate and target family. This is a post-hoc stress screen, not independent generalization.
+
+Run:
+
+```sh
+OPENBLAS_NUM_THREADS=1 python sweep.py --out results/sweep.json
+```
+
+| Strategy | Mean absolute relative readout error across 384 cases | Wins |
+| --- | ---: | --- |
+| Local-only writes, 80 updates/task | **0.015412** | Beats global in **141/384** cases |
+| Global writes, 80 updates/task | **0.010981** | Beats local in **243/384** cases |
+| Projected global writes, 32 updates/task | **0.000593** | Beats both in **384/384** cases |
+| Four-value indexed lookup | **0** | Exact and cheaper |
+
+The correction matters: simply protecting the bridge geometry and updating only the addressed block **does not reliably protect content**. Cross-region effects still occur through the shared network.
+
+The third arm uses **prior-art orthogonal gradient projection** (OGD/GPM-style). The old readouts' sensitivity rows are computed by the same physical forward×adjoint edge formula. Let `J_old` stack those rows over the 16 writable edges; project the new proposed gradient `u` to
+
+```text
+u_safe = (I - J_old^T (J_old J_old^T)^+ J_old) u
+```
+
+The code uses an SVD row-space projection. This suppresses new updates in directions to which **previously learned outputs** are first-order sensitive. Because the Jacobian is recomputed every step, the protection is more robust to local nonlinearity than projecting just once.
+
+**Cost boundary:** the global and local arms use 4 × 80 = 320 forward/adjoint sensitivity evaluations; the protected arm uses 32 × (1+2+3+4) = **320** evaluations by explicitly re-querying all earlier tasks. However, its SVDs, old-task replay, data/control requirements and computation overhead are *not matched*. It also has access to the list of old task ports. This is not a free biological learning rule or autonomous indexing. It is not a fair efficiency win over direct storage. No held-out task family was evaluated.
+
+The protected arm has **not** passed the bridge-drift/homeostasis gate: G0's drift failure remains, and projection cannot magically make a physically changed address scaffold invariant.
+
+## G2 — the next genuine discriminator (not yet run)
+
+Take the protected writer into a task with more potential experiences than explicit readout slots. Freeze hyperparameters, constrain the old-query replay budget, add context-gated readouts and physically perturbed bridges, and compare with capacity-/compute-matched conventional gradient projection, recurrent memory and direct indexed memory. A geometry-mediated benefit must survive those controls.
+
 ## What about PAC as an address?
 
 Phase–amplitude coupling (PAC) could provide a *time-selective read gate* across hierarchical regions: a slow phase might determine which region's fast activity is read in each temporal window. But the present medium is passive, with **real exponential decays, not oscillations**. A slow Laplacian eigenmode is not automatically a phase oscillator.
