@@ -1,6 +1,8 @@
 import copy
+import hashlib
 import importlib.util
 import unittest
+from unittest import mock
 import numpy as np
 
 AVAILABLE=importlib.util.find_spec('local_slowness_gate') is not None
@@ -53,6 +55,42 @@ class GateTests(unittest.TestCase):
         self.assertEqual(sum(map(len,groups)),len(set(sum(groups,[]))))
         self.assertEqual(p['evaluation']['primary_delay'],60.)
         self.assertEqual(p['evaluation']['primary_rewrite_delay'],0.)
+
+    def test_retention_gate_accounts_for_initial_readability(self):
+        r=gate.run_experiment('smoke');d=r['devices'][0];p=r['effective_config']
+        d['conditions']['retention:0']['local']['accuracy']=1.
+        d['conditions']['retention:0']['trace']['accuracy']=.8
+        d['conditions']['retention:2']['local']['accuracy']=.8
+        d['conditions']['retention:2']['trace']['accuracy']=.6
+        s=gate.summarize([d],p,False)
+        self.assertAlmostEqual(s['retention_gain_local_minus_trace'],0.)
+
+    def test_rewrite_gate_rejects_two_equally_bad_rewriters(self):
+        r=gate.run_experiment('smoke');d=r['devices'][0]
+        d['conditions']['rewrite:0']['local']['accuracy']=.1
+        d['conditions']['rewrite:0']['trace']['accuracy']=.1
+        s=gate.summarize([d],r['effective_config'],False)
+        self.assertFalse(s['gates']['retention_without_rewrite_cost']['criteria'].get('rewrite_quality',True))
+
+    def test_refinement_uses_actual_training_triplet_and_all_primary_phases(self):
+        p=gate.effective(gate.load_protocol(),'smoke');d=gate.run_device(81,p)
+        drive=gate.drives(81,1,p['evaluation']['training_pairs'],p['model'],tag=1)[:3]
+        self.assertEqual(d['refinement'].get('training_drive_sha256'),hashlib.sha256(drive.tobytes()).hexdigest())
+        for writer in ('local','trace'):
+            self.assertEqual(set(d['refinement']['by_writer'][writer]),{'after_write','after_wait','after_rewrite'})
+
+    def test_source_change_during_execution_is_rejected(self):
+        hashes=gate.source_hashes()
+        with mock.patch.object(gate,'source_hashes',side_effect=[hashes,hashes|{'changed':'source'}]):
+            with self.assertRaisesRegex(ValueError,'source changed'):
+                gate.run_experiment('smoke')
+
+    def test_full_replay_rejects_unlocked_protocol_before_running_devices(self):
+        r=gate.run_experiment('smoke');r.update(mode='full',held_out=True,
+            lock_commit='436feaec27ae13e3b272e70dcaf3fdd0febf99ef')
+        r['protocol']['locked']=False
+        with self.assertRaisesRegex(ValueError,'locked protocol'):
+            gate.audit_receipt(r)
 
 
 if __name__=='__main__':unittest.main()

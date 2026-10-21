@@ -5,7 +5,9 @@ import copy
 import hashlib
 import html
 import json
+import os
 from pathlib import Path
+import platform
 import re
 import subprocess
 import numpy as np
@@ -104,17 +106,37 @@ def observe(A,states,seed,split,pairs,cfg,*,condition):
     return features,examples,read_costs,budget_error
 
 
-def refinement(A,seed,cfg):
-    # First paired training triplet only; deterministic and disclosed, not every trial.
-    drive=drives(seed,1,1,cfg,tag=1);initial=np.full((3,len(A)),cfg['initial_mass_mean'])
-    coarse,_,_=evolve(A,initial,drive,dt=cfg['dt'],rate=cfg['write_rate'],local=True,floor=cfg['activity_floor'])
-    fine_cfg=cfg|{'dt':cfg['dt']/2}
-    fine,_,_=evolve(A,initial,np.repeat(drive,2,axis=1),dt=fine_cfg['dt'],rate=cfg['write_rate'],local=True,floor=cfg['activity_floor'])
-    ports=[0,cfg['size']-1,cfg['size']**2-cfg['size']]
-    cv,_=probe(A,coarse,ports,cfg);fv,_=probe(A,fine,ports,fine_cfg)
-    return {'sampled_histories':3,'material_max_abs':float(np.max(np.abs(coarse-fine))),
-            'probe_voltage_max_abs':float(np.max(np.abs(cv-fv))),
-            'scope':'Full writing and probe refinement on first training triplet; material freshly rewritten at each step size.'}
+def refinement(A,seed,cfg,ecfg):
+    # Actual first paired triplets, with the same amplitudes/noise as full batches.
+    train=drives(seed,1,ecfg['training_pairs'],cfg,tag=1)[:3]
+    test=drives(seed,2,ecfg['test_pairs'],cfg,tag=1)[:3]
+    offset=np.repeat(rng(seed,2,41).integers(1,3,ecfg['test_pairs']),3)
+    replacement=(np.tile(np.arange(3),ecfg['test_pairs'])+offset)%3
+    rewrite=drives(seed,2,ecfg['test_pairs'],cfg,tag=2,labels=replacement)[:3]
+    ports=[0,cfg['size']-1,cfg['size']**2-cfg['size']];by_writer={}
+    for writer in ('local','trace'):
+        levels=[]
+        for multiplier in (1,2):
+            c=cfg|{'dt':cfg['dt']/multiplier};initial=np.full((3,len(A)),cfg['initial_mass_mean'])
+            def write(start,drive):
+                return evolve(A,start,np.repeat(drive,multiplier,axis=1),dt=c['dt'],rate=c['write_rate'],local=writer=='local',floor=c['activity_floor'])[0]
+            def observe(m):return probe(A,m,ports,c)[0]
+            def wait(m,duration):return wait_material(m,duration,dt=c['dt'],rate=c['rest_rate'],local=writer=='local')[0]
+            training=write(initial,train);written=write(initial,test)
+            retained=wait(written,ecfg['primary_delay'])
+            replaced=write(wait(written,ecfg['rewrite_gap']),rewrite)
+            later=wait(replaced,max(ecfg['rewrite_delays']))
+            levels.append({'after_write':(np.concatenate([training,written]),np.concatenate([observe(training),observe(written)])),
+                'after_wait':(retained,observe(retained)),
+                'after_rewrite':(np.concatenate([replaced,later]),np.concatenate([observe(replaced),observe(later)]))})
+        by_writer[writer]={phase:{'material_max_abs':float(np.max(np.abs(levels[0][phase][0]-levels[1][phase][0]))),
+            'probe_voltage_max_abs':float(np.max(np.abs(levels[0][phase][1]-levels[1][phase][1])))} for phase in levels[0]}
+    rows=[v for phases in by_writer.values() for v in phases.values()]
+    return {'sampled_histories_per_phase':3,'by_writer':by_writer,
+        'training_drive_sha256':hashlib.sha256(train.tobytes()).hexdigest(),
+        'material_max_abs':max(v['material_max_abs'] for v in rows),
+        'probe_voltage_max_abs':max(v['probe_voltage_max_abs'] for v in rows),
+        'scope':'First actual training/test triplets, both primary writers, writing, primary waiting, replacement and later waiting; freshly rewritten at each dt. Does not check every trial.'}
 
 
 def run_device(seed,p):
@@ -156,9 +178,10 @@ def run_device(seed,p):
         record(f'rewrite:{delay:g}',states,replacement,100+ci,old=y)
     return {'seed':seed,'conditions':conditions,'calibration':models,'example_materials':examples,
         'fixed_conductances':g.tolist(),'costs':costs,'probe_vector_steps':read_costs,
-        'max_material_budget_error':budget_error,'refinement':refinement(A,seed,cfg),
+        'max_material_budget_error':budget_error,'refinement':refinement(A,seed,cfg,ecfg),
         'memory':{'persistent_material_scalars_per_arm':n,'persistent_material_bytes_per_arm':8*n,
             'fixed_conductance_scalars':len(g),'fast_voltage_scalars_per_trial':n,
+            'dense_fixed_operator_cache_scalars':n*n,
             'decoder_scalars_per_arm':12*len(cfg['sample_times']),
             'observed_voltage_scalars_per_probe':3*len(cfg['sample_times']),
             'fast_activity_at_every_probe':'zero','read_plasticity':'frozen',
@@ -170,7 +193,9 @@ def summarize(devices,p,held_out):
     means={condition:{arm:float(np.mean([d['conditions'][condition][arm]['accuracy'] for d in devices]))
         for arm in ARMS} for condition in devices[0]['conditions']}
     ecfg=p['evaluation'];rules=p['claims'];primary=f"retention:{ecfg['primary_delay']:g}";rewrite=f"rewrite:{ecfg['primary_rewrite_delay']:g}"
-    gain=np.array([d['conditions'][primary]['local']['accuracy']-d['conditions'][primary]['trace']['accuracy'] for d in devices])
+    delayed=np.array([d['conditions'][primary]['local']['accuracy']-d['conditions'][primary]['trace']['accuracy'] for d in devices])
+    initial=np.array([d['conditions']['retention:0']['local']['accuracy']-d['conditions']['retention:0']['trace']['accuracy'] for d in devices])
+    gain=delayed-initial
     cost=means[rewrite]['trace']-means[rewrite]['local']
     intervals=np.quantile(gain[rng(0,0,99).integers(0,len(gain),(2000,len(gain)))].mean(axis=1),[.025,.975])
     numerical=all(d['refinement']['material_max_abs']<=ecfg['refinement_mass_max_abs']
@@ -178,12 +203,15 @@ def summarize(devices,p,held_out):
     mechanism={'initial_accuracy':means['retention:0']['local']>=rules['initial_accuracy_min'],
         'controls':all(means['retention:0'][a]<=rules['control_accuracy_max'] for a in ('uniform','shuffled','noise_only')),
         'numerical_refinement':numerical}
-    criteria={'initial_accuracy':mechanism['initial_accuracy'],
+    criteria={'initial_accuracy':mechanism['initial_accuracy'] and means['retention:0']['trace']>=rules['initial_accuracy_min'],
         'retention_gain':float(gain.mean())>=rules['retention_gain_min'],
         'device_consistency':float(np.mean(gain>0))>=rules['positive_device_fraction_min'],
-        'rewrite_cost':cost<=rules['rewrite_accuracy_cost_max'],'numerical_refinement':numerical}
+        'rewrite_cost':cost<=rules['rewrite_accuracy_cost_max'],
+        'rewrite_quality':means[rewrite]['local']>=rules['rewrite_accuracy_min'],'numerical_refinement':numerical}
     return {'mean_accuracy':means,'retention_gain_local_minus_trace':float(gain.mean()),
         'per_device_retention_gain':gain.tolist(),'positive_device_fraction':float(np.mean(gain>0)),
+        'delayed_accuracy_gain_local_minus_trace':float(delayed.mean()),
+        'retention_gain_definition':rules['retention_gain_definition'],
         'paired_device_bootstrap_95':intervals.tolist(),'rewrite_accuracy_cost':cost,
         'gates':{'material_memory':{'criteria':mechanism,'passed':bool(all(mechanism.values())) if held_out else None},
             'retention_without_rewrite_cost':{'criteria':criteria,'passed':bool(all(criteria.values())) if held_out else None}},
@@ -204,12 +232,16 @@ def check_lock(lock,p):
 
 
 def run_experiment(mode='development',lock=None):
+    start_hashes=source_hashes()
     protocol=load_protocol()
     if mode=='full':check_lock(lock,protocol)
     p=effective(protocol,mode)
     devices=[run_device(s,p) for s in p['seeds'][mode]]
+    if source_hashes()!=start_hashes:raise ValueError('source changed during execution')
     return {'experiment':'local_slowness','mode':mode,'held_out':mode=='full','lock_commit':lock,
-        'protocol':protocol,'effective_config':p,'source_sha256':source_hashes(),'devices':devices,
+        'protocol':protocol,'effective_config':p,'source_sha256':start_hashes,'devices':devices,
+        'environment':{'python':platform.python_version(),'numpy':np.__version__,'platform':platform.platform(),
+            'threads':{k:os.environ.get(k) for k in ('OPENBLAS_NUM_THREADS','OMP_NUM_THREADS')}},
         'summary':summarize(devices,p,mode=='full')}
 
 
@@ -226,6 +258,8 @@ def close(saved,expected,label='receipt'):
 
 
 def audit_receipt(receipt):
+    if receipt.get('held_out') and not receipt.get('protocol',{}).get('locked'):
+        raise ValueError('full replay requires a locked protocol')
     if receipt['protocol']!=load_protocol() or receipt['source_sha256']!=source_hashes():raise ValueError('audit source/protocol mismatch')
     if receipt['mode'] not in ('smoke','development','full') or receipt['held_out']!=(receipt['mode']=='full'):raise ValueError('invalid mode flags')
     if receipt['held_out']:
@@ -277,8 +311,15 @@ def main():
         args.out.parent.mkdir(parents=True,exist_ok=True)
         with args.out.open('x') as stream:json.dump(result,stream,indent=2);stream.write('\n')
     else:
-        result=run_experiment(args.mode,args.lock_commit);result['audit']=audit_receipt(result)
+        result=run_experiment(args.mode,args.lock_commit)
         save_receipt(result,args.out)
+        # Preserve first outcomes before expensive replay; write a separate audit.
+        audit_path=args.out.with_name(args.out.stem+'-audit.json')
+        try:audit=audit_receipt(result)
+        except Exception as error:
+            with audit_path.open('x') as stream:json.dump({'passed':False,'error':str(error)},stream)
+            raise
+        with audit_path.open('x') as stream:json.dump(audit,stream,indent=2);stream.write('\n')
     print(json.dumps(result.get('summary',result),indent=2))
 
 

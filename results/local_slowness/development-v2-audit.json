@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "devices_replayed": 3,
+  "scope": "Entire writer, waiting, replacement, calibration and all readouts regenerated from seeds; all saved fields/decisions/costs/summary checked.",
+  "float_tolerance": {
+    "rtol": 1e-08,
+    "atol": 1e-10
+  },
+  "source_lock_checked": false
+}

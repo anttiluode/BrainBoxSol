@@ -19,6 +19,7 @@ def validate_operator(A,dt,nodes):
     if (A.shape!=(nodes,nodes) or not np.isfinite(A).all()
             or not np.allclose(A,A.T,atol=1e-14,rtol=0)
             or not np.isfinite(dt) or dt<=0 or np.any(np.diag(A)<=0)
+            or np.any((A-np.diag(np.diag(A)))>1e-14) or np.any(A.sum(axis=1)<-1e-14)
             or dt*2*np.max(np.diag(A))>.8+1e-14):
         raise ValueError("invalid RC operator or unstable time step")
     return A

@@ -5,7 +5,7 @@
   "question": "Does activity-dependent local slowing improve material-memory retention without sacrificing rewriting, relative to an equally sized activity trace?",
   "model": {
     "size": 5,
-    "dt": 0.1,
+    "dt": 0.05,
     "leak": 0.04,
     "conductance_mean": 0.12,
     "initial_mass_mean": 1.0,
@@ -31,9 +31,9 @@
     "training_pairs": 16,
     "test_pairs": 32,
     "primary_delay": 60.0,
-    "primary_rewrite_delay": 0.0
-    ,"refinement_mass_max_abs": 0.05
-    ,"refinement_voltage_max_abs": 0.001
+    "primary_rewrite_delay": 0.0,
+    "refinement_mass_max_abs": 0.05,
+    "refinement_voltage_max_abs": 0.001
   },
   "seeds": {
     "smoke": [81],
@@ -45,7 +45,14 @@
     "control_accuracy_max": 0.5,
     "retention_gain_min": 0.1,
     "positive_device_fraction_min": 0.8,
-    "rewrite_accuracy_cost_max": 0.05
+    "rewrite_accuracy_cost_max": 0.05,
+    "rewrite_accuracy_min": 0.8,
+    "retention_gain_definition": "(local_delayed-local_initial)-(trace_delayed-trace_initial)"
+  },
+  "development_amendment": {
+    "prior_source_commit": "436feaec27ae13e3b272e70dcaf3fdd0febf99ef",
+    "prior_receipt": "results/local_slowness/development-v1.json",
+    "reason": "First development missed the predefined 0.05 material refinement bound (max about 0.070). Halve dt only for numerical accuracy; keep physical durations, drive statistics, learning rates, seeds and benefit thresholds. Independent review requires baseline-adjusted retention, initial trace adequacy, absolute rewrite adequacy, refinement of both writers through waiting/rewrite, and stronger provenance guards. No full seeds run."
   },
   "notes": [
     "Phenomenological mobility model, not physical mass, variable-capacitor electrodynamics, relativity, quantum tunneling or topological protection.",

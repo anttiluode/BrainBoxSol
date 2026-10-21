@@ -76,5 +76,10 @@ class LocalSlownessTests(unittest.TestCase):
             with self.assertRaises(ValueError):ls.voltage_step(self.A,np.zeros_like(m),m,np.zeros_like(m),.1)
         with self.assertRaises(ValueError):ls.evolve(self.A,self.m,np.ones((2,3,9)),dt=10.,rate=.4,local=True)
 
+    def test_symmetric_but_non_rc_operators_are_rejected(self):
+        for A in (np.array([[1.,2.],[2.,1.]]),np.array([[1.,-2.],[-2.,1.]])):
+            with self.assertRaises(ValueError):
+                ls.voltage_step(A,np.zeros((1,2)),np.ones((1,2)),np.zeros((1,2)),.1)
+
 
 if __name__=="__main__":unittest.main()
