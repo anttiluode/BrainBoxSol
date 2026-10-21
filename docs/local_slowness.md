@@ -22,4 +22,6 @@ Independent review also found that a delayed-accuracy advantage could arise sole
 
 Provenance is sampled before computation and checked again afterward. Full replay rejects unlocked protocols before any full-device calculation. Raw results are saved before replay, with a separate audit file, so an audit failure cannot silently discard first outcomes. All important review findings have regression tests; operator validation also rejects symmetric matrices that are not valid passive RC operators.
 
+The refined development source is commit `4df4e647a613d86967a283154b40524201a2b05f`, with `development-v2*.json` preserved. All numerical checks passed; the same 6.25-point delayed advantage remained, while replacement accuracy was 63.54% local versus 100% trace. A final metadata-only portability correction replaces a bit-exact floating input hash with recorded current samples checked at numerical tolerance. No dynamical equation, scientific threshold or outcome-dependent setting changed for that correction.
+
 Implementation sequence: (1) numerical model and behavioral tests, (2) paired experiment/calibration and tamper-checking replay, (3) development and independent review, (4) source/protocol lock before untouched outcomes, (5) report every arm and both gates, then review and merge. No full-seed tuning.

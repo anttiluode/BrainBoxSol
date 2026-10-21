@@ -1,5 +1,4 @@
 import copy
-import hashlib
 import importlib.util
 import unittest
 from unittest import mock
@@ -75,7 +74,8 @@ class GateTests(unittest.TestCase):
     def test_refinement_uses_actual_training_triplet_and_all_primary_phases(self):
         p=gate.effective(gate.load_protocol(),'smoke');d=gate.run_device(81,p)
         drive=gate.drives(81,1,p['evaluation']['training_pairs'],p['model'],tag=1)[:3]
-        self.assertEqual(d['refinement'].get('training_drive_sha256'),hashlib.sha256(drive.tobytes()).hexdigest())
+        self.assertIn('training_drive_samples',d['refinement'])
+        np.testing.assert_allclose(d['refinement']['training_drive_samples'],drive[:,[0,-1],:],rtol=1e-12,atol=1e-14)
         for writer in ('local','trace'):
             self.assertEqual(set(d['refinement']['by_writer'][writer]),{'after_write','after_wait','after_rewrite'})
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "local_slowness",
-  "locked": false,
+  "locked": true,
   "question": "Does activity-dependent local slowing improve material-memory retention without sacrificing rewriting, relative to an equally sized activity trace?",
   "model": {
     "size": 5,

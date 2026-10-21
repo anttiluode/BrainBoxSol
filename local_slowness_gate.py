@@ -132,8 +132,9 @@ def refinement(A,seed,cfg,ecfg):
         by_writer[writer]={phase:{'material_max_abs':float(np.max(np.abs(levels[0][phase][0]-levels[1][phase][0]))),
             'probe_voltage_max_abs':float(np.max(np.abs(levels[0][phase][1]-levels[1][phase][1])))} for phase in levels[0]}
     rows=[v for phases in by_writer.values() for v in phases.values()]
-    return {'sampled_histories_per_phase':3,'by_writer':by_writer,
-        'training_drive_sha256':hashlib.sha256(train.tobytes()).hexdigest(),
+    return {'sampled_histories_per_triplet':3,'by_writer':by_writer,
+        'training_drive_samples':train[:,[0,-1],:].tolist(),
+        'phase_sampling':'after_write combines training/test triplets; after_rewrite combines immediate/later triplets; after_wait uses the test triplet.',
         'material_max_abs':max(v['material_max_abs'] for v in rows),
         'probe_voltage_max_abs':max(v['probe_voltage_max_abs'] for v in rows),
         'scope':'First actual training/test triplets, both primary writers, writing, primary waiting, replacement and later waiting; freshly rewritten at each dt. Does not check every trial.'}
