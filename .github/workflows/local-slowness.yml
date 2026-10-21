@@ -1,0 +1,51 @@
+name: Local slowness memory gate
+
+on:
+  push:
+    branches: [main, sol/local-slowness]
+    paths:
+      - local_slowness*.py
+      - test_local_slowness*.py
+      - adaptive_medium.py
+      - protocols/local_slowness.json
+      - results/local_slowness/**
+      - .github/workflows/local-slowness.yml
+  pull_request:
+    paths:
+      - local_slowness*.py
+      - test_local_slowness*.py
+      - adaptive_medium.py
+      - protocols/local_slowness.json
+      - results/local_slowness/**
+      - .github/workflows/local-slowness.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - run: python -m unittest discover -v
+      - run: python local_slowness_gate.py --mode smoke --out /tmp/local-slowness-ci/smoke.json
+      - name: Replay committed full experiment if present
+        run: |
+          if test -f results/local_slowness/full.json; then
+            python local_slowness_gate.py --audit results/local_slowness/full.json --out /tmp/local-slowness-ci/full-audit.json
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: local-slowness-ci
+          path: /tmp/local-slowness-ci/*.json
+          retention-days: 90

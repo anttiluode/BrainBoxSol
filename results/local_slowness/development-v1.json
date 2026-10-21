@@ -1,0 +1,309 @@
+{
+  "experiment": "local_slowness",
+  "mode": "development",
+  "held_out": false,
+  "lock_commit": null,
+  "protocol": {
+    "schema_version": 1,
+    "experiment": "local_slowness",
+    "locked": false,
+    "question": "Does activity-dependent local slowing improve material-memory retention without sacrificing rewriting, relative to an equally sized activity trace?",
+    "model": {
+      "size": 5,
+      "dt": 0.1,
+      "leak": 0.04,
+      "conductance_mean": 0.12,
+      "initial_mass_mean": 1.0,
+      "write_rate": 0.4,
+      "rest_rate": 0.04,
+      "activity_floor": 0.1,
+      "write_duration": 8.0,
+      "cue_duration": 4.0,
+      "noise_hold": 0.5,
+      "noise_sd": 0.08,
+      "probe_duration": 12.0,
+      "probe_pulse": 1.0,
+      "probe_amplitude": 1.0,
+      "sample_times": [
+        2.0,
+        6.0,
+        12.0
+      ],
+      "observation_noise_sd": 0.002
+    },
+    "arms": [
+      "local",
+      "trace",
+      "uniform",
+      "shuffled",
+      "noise_off",
+      "noise_only"
+    ],
+    "evaluation": {
+      "retention_delays": [
+        0.0,
+        20.0,
+        60.0
+      ],
+      "rewrite_gap": 20.0,
+      "rewrite_delays": [
+        0.0,
+        20.0
+      ],
+      "classes": 3,
+      "training_pairs": 16,
+      "test_pairs": 32,
+      "primary_delay": 60.0,
+      "primary_rewrite_delay": 0.0,
+      "refinement_mass_max_abs": 0.05,
+      "refinement_voltage_max_abs": 0.001
+    },
+    "seeds": {
+      "smoke": [
+        81
+      ],
+      "development": [
+        8101,
+        8107,
+        8111
+      ],
+      "full": [
+        8201,
+        8202,
+        8203,
+        8204,
+        8205,
+        8206,
+        8207,
+        8208,
+        8209,
+        8210
+      ]
+    },
+    "claims": {
+      "initial_accuracy_min": 0.8,
+      "control_accuracy_max": 0.5,
+      "retention_gain_min": 0.1,
+      "positive_device_fraction_min": 0.8,
+      "rewrite_accuracy_cost_max": 0.05
+    },
+    "notes": [
+      "Phenomenological mobility model, not physical mass, variable-capacitor electrodynamics, relativity, quantum tunneling or topological protection.",
+      "25 fast voltages plus 25 persistent positive material scalars. Global normalization fixes mean material to one after every update; this controller is explicit and nonlocal.",
+      "Local mobility 1/(1+m) slows both activity and material updates. Trace control retains the same 25 material scalars, but uses their mean mobility uniformly during writing and waiting. Both are read through their own spatial material field.",
+      "Uniform and shuffled controls use local-written material, respectively homogenized or independently permuted before probing; both preserve the total material budget. Uniform is also the erased-material control.",
+      "Noise-off removes writer background fluctuations without compensating input power. It diagnoses noise necessity, not a power-matched benefit. Noise-only has no class cue and receives exactly paired background fluctuations.",
+      "Histories are three corner cues. Each paired triplet shares background current and cue amplitude. New device and history streams are held out; per-device/arm labeled calibration is explicit.",
+      "Fast voltages are reset to zero before every write episode and every read. Material is frozen during the common probe; nine voltage samples are read, with fixed absolute observation noise.",
+      "Calibrate once on undelayed, single-history training samples; never recalibrate for waiting or rewriting. The replacement cue is one of the other two classes. Report both new-class and old-class decisions after rewriting.",
+      "Retention alone and retention-without-rewrite-cost are separate claims. All fresh outcomes are retained; do not tune full seeds.",
+      "The static conductance operator is unchanged. Local slowness cannot change its noise-free DC solution; no claim to repair the earlier bridge-drift failure.",
+      "Compute is counted in actual vector-step updates; material/decoder/observation storage is reported. This does not establish capacity, efficiency or waveform necessity."
+    ]
+  },
+  "effective_config": {
+    "schema_version": 1,
+    "experiment": "local_slowness",
+    "locked": false,
+    "question": "Does activity-dependent local slowing improve material-memory retention without sacrificing rewriting, relative to an equally sized activity trace?",
+    "model": {
+      "size": 5,
+      "dt": 0.1,
+      "leak": 0.04,
+      "conductance_mean": 0.12,
+      "initial_mass_mean": 1.0,
+      "write_rate": 0.4,
+      "rest_rate": 0.04,
+      "activity_floor": 0.1,
+      "write_duration": 8.0,
+      "cue_duration": 4.0,
+      "noise_hold": 0.5,
+      "noise_sd": 0.08,
+      "probe_duration": 12.0,
+      "probe_pulse": 1.0,
+      "probe_amplitude": 1.0,
+      "sample_times": [
+        2.0,
+        6.0,
+        12.0
+      ],
+      "observation_noise_sd": 0.002
+    },
+    "arms": [
+      "local",
+      "trace",
+      "uniform",
+      "shuffled",
+      "noise_off",
+      "noise_only"
+    ],
+    "evaluation": {
+      "retention_delays": [
+        0.0,
+        20.0,
+        60.0
+      ],
+      "rewrite_gap": 20.0,
+      "rewrite_delays": [
+        0.0,
+        20.0
+      ],
+      "classes": 3,
+      "training_pairs": 16,
+      "test_pairs": 32,
+      "primary_delay": 60.0,
+      "primary_rewrite_delay": 0.0,
+      "refinement_mass_max_abs": 0.05,
+      "refinement_voltage_max_abs": 0.001
+    },
+    "seeds": {
+      "smoke": [
+        81
+      ],
+      "development": [
+        8101,
+        8107,
+        8111
+      ],
+      "full": [
+        8201,
+        8202,
+        8203,
+        8204,
+        8205,
+        8206,
+        8207,
+        8208,
+        8209,
+        8210
+      ]
+    },
+    "claims": {
+      "initial_accuracy_min": 0.8,
+      "control_accuracy_max": 0.5,
+      "retention_gain_min": 0.1,
+      "positive_device_fraction_min": 0.8,
+      "rewrite_accuracy_cost_max": 0.05
+    },
+    "notes": [
+      "Phenomenological mobility model, not physical mass, variable-capacitor electrodynamics, relativity, quantum tunneling or topological protection.",
+      "25 fast voltages plus 25 persistent positive material scalars. Global normalization fixes mean material to one after every update; this controller is explicit and nonlocal.",
+      "Local mobility 1/(1+m) slows both activity and material updates. Trace control retains the same 25 material scalars, but uses their mean mobility uniformly during writing and waiting. Both are read through their own spatial material field.",
+      "Uniform and shuffled controls use local-written material, respectively homogenized or independently permuted before probing; both preserve the total material budget. Uniform is also the erased-material control.",
+      "Noise-off removes writer background fluctuations without compensating input power. It diagnoses noise necessity, not a power-matched benefit. Noise-only has no class cue and receives exactly paired background fluctuations.",
+      "Histories are three corner cues. Each paired triplet shares background current and cue amplitude. New device and history streams are held out; per-device/arm labeled calibration is explicit.",
+      "Fast voltages are reset to zero before every write episode and every read. Material is frozen during the common probe; nine voltage samples are read, with fixed absolute observation noise.",
+      "Calibrate once on undelayed, single-history training samples; never recalibrate for waiting or rewriting. The replacement cue is one of the other two classes. Report both new-class and old-class decisions after rewriting.",
+      "Retention alone and retention-without-rewrite-cost are separate claims. All fresh outcomes are retained; do not tune full seeds.",
+      "The static conductance operator is unchanged. Local slowness cannot change its noise-free DC solution; no claim to repair the earlier bridge-drift failure.",
+      "Compute is counted in actual vector-step updates; material/decoder/observation storage is reported. This does not establish capacity, efficiency or waveform necessity."
+    ]
+  },
+  "source_sha256": {
+    "local_slowness.py": "8c6a653347cd9e889007390eb6457ac63d8a7653935f80dac05a4d7416324b9f",
+    "local_slowness_gate.py": "47fd699869c1af64aa77bb8e3b706d9a424e84a86a0e4b7a06eb8d5c5c527f54",
+    "adaptive_medium.py": "c51a321dff932a23e3c9535c40a9aeb26b1fd89b3219c8e03b3814bbbbbca6ce",
+    "protocols/local_slowness.json": "bca9f99e64e1ad89aa441d8769a211c8d6f46c12e029236d016de31364524bf6"
+  },
+  "summary": {
+    "mean_accuracy": {
+      "retention:0": {
+        "local": 1.0,
+        "trace": 1.0,
+        "uniform": 0.3333333333333333,
+        "shuffled": 0.34722222222222227,
+        "noise_off": 1.0,
+        "noise_only": 0.3333333333333333
+      },
+      "retention:20": {
+        "local": 0.9965277777777778,
+        "trace": 0.9965277777777778,
+        "uniform": 0.3333333333333333,
+        "shuffled": 0.3333333333333333,
+        "noise_off": 1.0,
+        "noise_only": 0.3333333333333333
+      },
+      "retention:60": {
+        "local": 0.9895833333333334,
+        "trace": 0.9270833333333334,
+        "uniform": 0.3333333333333333,
+        "shuffled": 0.3333333333333333,
+        "noise_off": 0.9861111111111112,
+        "noise_only": 0.3333333333333333
+      },
+      "rewrite:0": {
+        "local": 0.6423611111111112,
+        "trace": 1.0,
+        "uniform": 0.3333333333333333,
+        "shuffled": 0.3506944444444444,
+        "noise_off": 0.59375,
+        "noise_only": 0.3333333333333333
+      },
+      "rewrite:20": {
+        "local": 0.6041666666666666,
+        "trace": 0.9965277777777778,
+        "uniform": 0.3333333333333333,
+        "shuffled": 0.34027777777777773,
+        "noise_off": 0.5486111111111112,
+        "noise_only": 0.3333333333333333
+      }
+    },
+    "retention_gain_local_minus_trace": 0.0625,
+    "per_device_retention_gain": [
+      0.0625,
+      0.03125,
+      0.09375
+    ],
+    "positive_device_fraction": 1.0,
+    "paired_device_bootstrap_95": [
+      0.03125,
+      0.09375
+    ],
+    "rewrite_accuracy_cost": 0.35763888888888884,
+    "gates": {
+      "material_memory": {
+        "criteria": {
+          "initial_accuracy": true,
+          "controls": true,
+          "numerical_refinement": false
+        },
+        "passed": null
+      },
+      "retention_without_rewrite_cost": {
+        "criteria": {
+          "initial_accuracy": true,
+          "retention_gain": false,
+          "device_consistency": true,
+          "rewrite_cost": false,
+          "numerical_refinement": false
+        },
+        "passed": null
+      }
+    },
+    "replication_unit": "device; each accuracy averages histories within a device"
+  },
+  "audit": {
+    "passed": true,
+    "devices_replayed": 3,
+    "scope": "Entire writer, waiting, replacement, calibration and all readouts regenerated from seeds; all saved fields/decisions/costs/summary checked.",
+    "float_tolerance": {
+      "rtol": 1e-08,
+      "atol": 1e-10
+    },
+    "source_lock_checked": false
+  },
+  "device_receipts": [
+    {
+      "path": "development-v1-8101.json",
+      "sha256": "420d2b26941e57560d635d0891b163e8c192a3ce104c4307666c1883f40a9b2e"
+    },
+    {
+      "path": "development-v1-8107.json",
+      "sha256": "bc0a05e01310e0ce6c7ef3eb87866f340106cd1cebeaffad42e6551a1a8cf496"
+    },
+    {
+      "path": "development-v1-8111.json",
+      "sha256": "acc04d5e10299dea7ad4b6caf5d9f3465206360a5211412e984b41044a45c17e"
+    }
+  ]
+}

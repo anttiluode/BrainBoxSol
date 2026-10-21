@@ -1,0 +1,72 @@
+# Local slowness: retention and rewriting
+
+Antti's Noise Sea/bucket idea motivates a bounded simulation: activity changes a persistent local field, which changes the speed of later activity and material updates. This is a phenomenological memory rule. It neither derives physical mass nor models relativistic time dilation.
+
+For positive material m, local mobility is r=1/(1+m). Fast voltages follow v_next=v+dt*r*(-A v+drive). A is a fixed positive RC operator from the existing spatial grid. The local writer updates m toward a spatially normalized activity-energy field, multiplied by the same mobility r. A global normalization keeps mean m=1. This normalization is an external nonlocal resource controller, not discovered biology. Waiting moves m toward its uniform baseline. Positive convex updates and the conservative RC step bound keep dynamics stable.
+
+The equally sized trace control stores the same m field and uses its spatial mean mobility uniformly during writing/waiting. Thus it receives the same mean rate at its own state but lacks local speed feedback. Both writers are probed using their actual local fields. Their trajectories can differ, so equal mean mobility is not a claim of equal dissipation or an identical spectral time constant. Uniform/erased and shuffled controls retain the local writer's material total. Noise-off and noise-only diagnostics distinguish cue information from the presence of background fluctuations; noise-off is not power matched.
+
+Three spatial histories are followed by different waiting intervals or by a replacement history. Every episode and probe starts with zero fast voltage. Calibration uses separate undelayed single-history examples, once per device/arm. It remains fixed for waiting and replacement. Replacement cues differ from the old cue, and both new/old decisions are reported. A common center probe is observed at three boundary nodes at three times, yielding nine continuous numbers. This explicitly designed multi-point readout carries no claim that a rich waveform is necessary.
+
+The primary benefit gate requires >=0.10 baseline-adjusted retention gain at delay 60: (local delayed - local initial) - (trace delayed - trace initial). It also requires positive gain on >=80% of device means, both initial accuracies >=0.8, local replacement accuracy >=0.8, and replacement accuracy cost <=0.05 versus trace. A separate mechanism gate requires initial local accuracy >=0.8 and uniform/shuffled/noise-only <=0.5 (three-class chance is 1/3). Both gates include numerical refinement of material and readout. These gates can fail independently. Device means, not individual read samples, are replication units.
+
+Development uses only seeds 8101/8107/8111; fresh devices 8201–8210 must not run until source and protocol are committed and locked. Original BrainBox experiments are preserved. The receipt includes trained calibration, all decisions, per-class observation means and first-triplet observations, example material fields, actual update counts, source hashes and a full deterministic replay audit. Complete trial observations are regenerated during replay rather than stored in full. Numerical tests verify unchanged DC equilibria, positive resource budgets, paired controls, reset boundaries, and time-step refinement. This tests an engineered trace-and-feedback mechanism, not autonomous learning.
+
+## Preserved development and review corrections
+
+The first development source and receipts are preserved at commit `436feaec27ae13e3b272e70dcaf3fdd0febf99ef` and `development-v1*.json`. At dt=0.1, local delay-60 accuracy was 98.96%, trace 92.71%; replacement was 64.24% local versus 100% trace. Both initial accuracies were 100%, uniform/noise-only were chance, and noise-off remained informative. These are development outcomes, not held-out evidence.
+
+That run missed the already specified material refinement tolerance (max about 0.070 versus 0.05), although voltage refinement was about 0.0001. The step is halved to 0.05 for numerical accuracy. Physical durations, noise statistics, write/rest rates, old thresholds and seed partitions are unchanged. Both writers are now refined through writing, primary waiting, replacement and subsequent waiting on actual first training/test triplets. The first version incorrectly called a separately generated triplet the first training triplet; its receipts and source remain intact.
+
+Independent review also found that a delayed-accuracy advantage could arise solely from better initial writing, and two equally poor rewriters could pass a relative-cost gate. Before fresh outcomes, retention is therefore baseline adjusted, both initial fits must be adequate, and local rewriting must reach the same 0.8 adequacy threshold. No tuning is done to rescue the unfavorable replacement outcome. The protocol documents this development-informed amendment.
+
+Provenance is sampled before computation and checked again afterward. Full replay rejects unlocked protocols before any full-device calculation. Raw results are saved before replay, with a separate audit file, so an audit failure cannot silently discard first outcomes. All important review findings have regression tests; operator validation also rejects symmetric matrices that are not valid passive RC operators.
+
+The refined development source is commit `4df4e647a613d86967a283154b40524201a2b05f`, with `development-v2*.json` preserved. All numerical checks passed; the same 6.25-point delayed advantage remained, while replacement accuracy was 63.54% local versus 100% trace. A final metadata-only portability correction replaces a bit-exact floating input hash with recorded current samples checked at numerical tolerance. No dynamical equation, scientific threshold or outcome-dependent setting changed for that correction.
+
+## Locked fresh-device result
+
+Exact source/protocol lock: **`4707775b006256c12b9b1256f98375c5d163e50a`**, committed after independent review and before devices 8201–8210 ran. Ten fresh device instances; 48 calibration histories and 96 test histories per device. The same test histories are observed in multiple conditions, not counted as independent replications.
+
+**The material-memory gate passed. The retention-without-rewrite-cost gate failed.**
+
+| Arm | Immediately after writing | After waiting 60 | After replacement | Replacement + waiting 20 |
+|---|---:|---:|---:|---:|
+| Local feedback | 100.0000% | 99.7917% | 65.1042% | 57.7083% |
+| Equal-state activity trace | 100.0000% | 96.7708% | 100.0000% | 99.8958% |
+| Uniform / erased | 33.3333% | 33.3333% | 33.3333% | 33.3333% |
+| Shuffled material | 34.6875% | 34.2708% | 33.9583% | 31.2500% |
+| No writer background noise | 100.0000% | 99.6875% | 60.7292% | 53.0208% |
+| Noise without cue | 33.3333% | 33.3333% | 33.3333% | 33.3333% |
+
+Baseline-adjusted retention gain is **3.0208 percentage points**, positive in all ten device means. The descriptive paired-device bootstrap 95% interval is **[2.0833, 3.9583] points**. This does not meet the locked 10-point minimum. Replacement costs **34.8958 points**, well above the allowed 5 points, and local replacement accuracy is below 80%. Every wrong local replacement decision reads the old class: the mechanism retains a competing trace rather than simply producing random answers. This is an operational readout result, not a claim about all possible decoders or optimum memory capacity.
+
+The noise-off diagnostic nearly ties long-delay retention. Background noise is therefore not necessary for this demonstrated memory mechanism; because input power is not matched, it is not a rigorous noise-benefit comparison. Local material-dependent rates produce a measurable retention/rewriting tradeoff here, but the two coupled feedback effects (voltage speed and material update speed) are not separately identified.
+
+The full replay regenerated all writers, waiting, replacement, calibration and decisions for all ten devices and passed. Each primary writer/device actually executed **38,400 voltage-vector updates and 268,800 material-vector updates**; each read arm additionally executed **126,720 probe-voltage vector updates**. Vector counts are not floating-point operation counts. Calibration trajectories are included; numerical refinement and offline decoder-fitting/report overhead are additional and excluded from these trajectory counts. Both primary writers have the same count and physical-time schedule.
+
+Per arm: 25 persistent material float64s (200 bytes), 25 fast voltages (200 bytes per trial), 36 calibrated decoder numbers (288 bytes), and nine observed voltage samples (72 bytes). The common fixed grid has 72 conductances (576 bytes), and the implementation caches its dense 25×25 operator (5,000 bytes). Offline batches, input/noise arrays, calibration data and Python overhead are additional. The uniform control has less independent information even though represented with 25 equal entries; the trace control supplies the equal-state comparison.
+
+Worst sampled dt-halving discrepancy was **0.040522** in material and **0.000072465** in probe voltage, within the locked bounds 0.05 and 0.001. Both primary writers and the actual sampled writing/waiting/replacement trajectories were checked, not every trial. No source, threshold, physical setting or fresh outcome was changed after the lock.
+
+[Full manifest](../results/local_slowness/full.json) · [Separate full replay audit](../results/local_slowness/full-audit.json) · [Visual report](../results/local_slowness/report.html) · [Result figure](../results/local_slowness/results.png) · [Material fields](../results/local_slowness/material.png) · [Independent review](local_slowness_review.md).
+
+The heatmaps deliberately show the first device and first example, labeled as such. They display material m, with a shared color scale, after voltage reset. Their total material is identical; local feedback retains more of the old corner after replacement. The line/bar figure averages all devices.
+
+## Reproduce
+
+```bash
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m unittest discover -v
+# Replay all saved outcomes without overwriting any receipt:
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python local_slowness_gate.py \
+  --audit results/local_slowness/full.json --out /tmp/local-slowness-audit-new.json
+# New full receipt: first check out the exact lock in a clean worktree.
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python local_slowness_gate.py \
+  --mode full --lock-commit 4707775b006256c12b9b1256f98375c5d163e50a \
+  --out /tmp/local-slowness-rerun/full.json
+# Optional report rendering requires matplotlib; choose a new output folder.
+python local_slowness_report.py --receipt results/local_slowness/full.json \
+  --out /tmp/local-slowness-report/report.html
+```
+
+Implementation sequence: (1) numerical model and behavioral tests, (2) paired experiment/calibration and tamper-checking replay, (3) development and independent review, (4) source/protocol lock before untouched outcomes, (5) report every arm and both gates, then review and merge. No full-seed tuning.
