@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "experiment": "local_slowness",
+  "locked": false,
+  "question": "Does activity-dependent local slowing improve material-memory retention without sacrificing rewriting, relative to an equally sized activity trace?",
+  "model": {
+    "size": 5,
+    "dt": 0.1,
+    "leak": 0.04,
+    "conductance_mean": 0.12,
+    "initial_mass_mean": 1.0,
+    "write_rate": 0.4,
+    "rest_rate": 0.04,
+    "activity_floor": 0.1,
+    "write_duration": 8.0,
+    "cue_duration": 4.0,
+    "noise_hold": 0.5,
+    "noise_sd": 0.08,
+    "probe_duration": 12.0,
+    "probe_pulse": 1.0,
+    "probe_amplitude": 1.0,
+    "sample_times": [2.0, 6.0, 12.0],
+    "observation_noise_sd": 0.002
+  },
+  "arms": ["local", "trace", "uniform", "shuffled", "noise_off", "noise_only"],
+  "evaluation": {
+    "retention_delays": [0.0, 20.0, 60.0],
+    "rewrite_gap": 20.0,
+    "rewrite_delays": [0.0, 20.0],
+    "classes": 3,
+    "training_pairs": 16,
+    "test_pairs": 32,
+    "primary_delay": 60.0,
+    "primary_rewrite_delay": 0.0
+    ,"refinement_mass_max_abs": 0.05
+    ,"refinement_voltage_max_abs": 0.001
+  },
+  "seeds": {
+    "smoke": [81],
+    "development": [8101, 8107, 8111],
+    "full": [8201, 8202, 8203, 8204, 8205, 8206, 8207, 8208, 8209, 8210]
+  },
+  "claims": {
+    "initial_accuracy_min": 0.8,
+    "control_accuracy_max": 0.5,
+    "retention_gain_min": 0.1,
+    "positive_device_fraction_min": 0.8,
+    "rewrite_accuracy_cost_max": 0.05
+  },
+  "notes": [
+    "Phenomenological mobility model, not physical mass, variable-capacitor electrodynamics, relativity, quantum tunneling or topological protection.",
+    "25 fast voltages plus 25 persistent positive material scalars. Global normalization fixes mean material to one after every update; this controller is explicit and nonlocal.",
+    "Local mobility 1/(1+m) slows both activity and material updates. Trace control retains the same 25 material scalars, but uses their mean mobility uniformly during writing and waiting. Both are read through their own spatial material field.",
+    "Uniform and shuffled controls use local-written material, respectively homogenized or independently permuted before probing; both preserve the total material budget. Uniform is also the erased-material control.",
+    "Noise-off removes writer background fluctuations without compensating input power. It diagnoses noise necessity, not a power-matched benefit. Noise-only has no class cue and receives exactly paired background fluctuations.",
+    "Histories are three corner cues. Each paired triplet shares background current and cue amplitude. New device and history streams are held out; per-device/arm labeled calibration is explicit.",
+    "Fast voltages are reset to zero before every write episode and every read. Material is frozen during the common probe; nine voltage samples are read, with fixed absolute observation noise.",
+    "Calibrate once on undelayed, single-history training samples; never recalibrate for waiting or rewriting. The replacement cue is one of the other two classes. Report both new-class and old-class decisions after rewriting.",
+    "Retention alone and retention-without-rewrite-cost are separate claims. All fresh outcomes are retained; do not tune full seeds.",
+    "The static conductance operator is unchanged. Local slowness cannot change its noise-free DC solution; no claim to repair the earlier bridge-drift failure.",
+    "Compute is counted in actual vector-step updates; material/decoder/observation storage is reported. This does not establish capacity, efficiency or waveform necessity."
+  ]
+}
