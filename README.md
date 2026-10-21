@@ -12,6 +12,12 @@ Small CPU experiments in persistent conductances, transient responses, and histo
 
 The temporal-port experiment uses offline waveform conditioning and a calibrated threshold. Raw charge alone also scored 100%; it does not show that every scalar readout is blind. These are controlled simulation mechanisms, not a complete brain or a demonstrated general AI advantage.
 
+## Local slowness — October 21
+
+An activity-written spatial field slows its own future dynamics. On ten locked fresh devices it retained the old history at **99.79%** after waiting, versus **96.77%** for an equally sized ordinary trace. Rewriting to a new history fell to **65.10%**, versus **100%** for the trace. The material-memory gate passed; the proposed retention-without-rewrite-cost benefit failed. Removing writer background noise barely changed retention. This is an engineered memory tradeoff, not evidence of physical mass or time dilation.
+
+[Method and locked results](docs/local_slowness.md) · [Visual report](results/local_slowness/report.html) · [Figures](results/local_slowness/results.png) · [Raw manifest](results/local_slowness/full.json) · [Full replay audit](results/local_slowness/full-audit.json) · [Independent review](docs/local_slowness_review.md)
+
 ## Noise-aware writing × interface repair — October 20 follow-up
 
 **Locked result: both proposed benefits failed.** On ten fresh devices under independent bridge drift, ordinary error was **0.02617**, noise-aware **0.02730**, interface repair **0.001107**, and combined **0.003696** (normalized response errors; lower is better). Noise-aware writing introduced a clean-fit penalty and did not complement repair. Training budgets were matched. V1's development-informed primary correction and all receipts remain preserved.

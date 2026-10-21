@@ -15,3 +15,9 @@ Regression tests for these cases first failed on the archived implementation, th
 The final re-review found no remaining Important issue. All 21 new tests passed, and the whole repository suite has 95 tests. No calibration leakage was found. The reviewer confirmed the paired nuisances, frozen train-only decoder, fast resets, equal material-state count, explicit resource controller and numerical sampling scope. Full-seed outcomes must follow this review and source lock; negative outcomes remain results.
 
 The resulting claim is deliberately narrow: an engineered spatial trace with feedback may trade retention for rewriting in a supervised readout task. There is no claim about physical mass, quantum effects, emergent intelligence, digital efficiency, waveform necessity or repair of the earlier DC bridge failure.
+
+## Post-outcome review and independent replay
+
+After lock `4707775b006256c12b9b1256f98375c5d163e50a` and the first full run, the reviewer independently reran the entire saved experiment in a separate audit. All ten devices passed at rtol=1e-8 and atol=1e-10, with source-lock verification. The reviewer checked the reported tables, gates, trajectory counts, numerical bounds and plots. All **335/960** wrong immediate local replacement decisions read the old class; none read the third class.
+
+No Important issue remained. A minor cost-description ambiguity was corrected: calibration trajectories are counted, while offline decoder fitting, refinement and reporting are additional. The independent audit is preserved separately as `results/local_slowness/independent-audit.json`. Original receipts were not changed. The material-memory pass and proposed-benefit failure both remain visible.
